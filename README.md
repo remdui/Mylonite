@@ -28,3 +28,5 @@ Mylonite is a record of pressure made coherent.
 Copyright (c) 2026 Remy Duijsens
 
 This project is licensed under the MIT License. See the `LICENSE` file for details.
+
+Unless stated otherwise, non-code content and branding assets are not covered by the MIT License.
