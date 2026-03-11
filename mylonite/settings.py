@@ -77,21 +77,24 @@ public_base_url = deploy_config.get("public_base_url", "").strip()
 additional_allowed_hosts = deploy_config.get("additional_allowed_hosts", [])
 additional_csrf_trusted_origins = deploy_config.get("additional_csrf_trusted_origins", [])
 
+parsed_public_base_url = None
 ALLOWED_HOSTS = []
 CSRF_TRUSTED_ORIGINS = []
 
 if public_base_url:
-    parsed_base_url = urlparse(public_base_url)
+    parsed_public_base_url = urlparse(public_base_url)
 
-    if not parsed_base_url.scheme or not parsed_base_url.netloc:
+    if not parsed_public_base_url.scheme or not parsed_public_base_url.netloc:
         raise RuntimeError("runtime/config/deploy.toml: public_base_url must be a full URL.")
 
-    primary_host = parsed_base_url.hostname
+    primary_host = parsed_public_base_url.hostname
     if not primary_host:
         raise RuntimeError("runtime/config/deploy.toml: public_base_url must contain a hostname.")
 
     ALLOWED_HOSTS.append(primary_host)
-    CSRF_TRUSTED_ORIGINS.append(f"{parsed_base_url.scheme}://{parsed_base_url.netloc}")
+    CSRF_TRUSTED_ORIGINS.append(
+        f"{parsed_public_base_url.scheme}://{parsed_public_base_url.netloc}"
+    )
 
 ALLOWED_HOSTS.extend(additional_allowed_hosts)
 CSRF_TRUSTED_ORIGINS.extend(additional_csrf_trusted_origins)
@@ -102,6 +105,23 @@ if not ALLOWED_HOSTS:
 if not CSRF_TRUSTED_ORIGINS:
     CSRF_TRUSTED_ORIGINS = ["http://localhost:8000"]
 
+is_https_deployment = bool(
+    parsed_public_base_url and parsed_public_base_url.scheme.lower() == "https"
+)
+
+PANEL_LOGIN_FAILURE_LIMIT = max(
+    1,
+    int(deploy_config.get("panel_login_failure_limit", 5)),
+)
+PANEL_LOGIN_FAILURE_WINDOW_SECONDS = max(
+    60,
+    int(deploy_config.get("panel_login_failure_window_seconds", 900)),
+)
+PANEL_LOGIN_LOCKOUT_SECONDS = max(
+    60,
+    int(deploy_config.get("panel_login_lockout_seconds", 900)),
+)
+
 INSTALLED_APPS = [
     "whitenoise.runserver_nostatic",
     "django.contrib.admin",
@@ -110,6 +130,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "apps.panel",
     "apps.web",
 ]
 
@@ -151,6 +172,22 @@ DATABASES = {
     }
 }
 
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {"min_length": 12},
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+    },
+]
+
 LANGUAGE_CODE = "en"
 TIME_ZONE = "Europe/Amsterdam"
 USE_I18N = True
@@ -174,10 +211,37 @@ STORAGES = {
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+LOGIN_URL = "/admin/login/"
+LOGIN_REDIRECT_URL = "/admin/dashboard/"
+LOGOUT_REDIRECT_URL = "/"
+
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 X_FRAME_OPTIONS = "DENY"
 
-SESSION_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SECURE = bool(
+    deploy_config.get("secure_cookies", is_https_deployment)
+)
+CSRF_COOKIE_SECURE = bool(
+    deploy_config.get("secure_cookies", is_https_deployment)
+)
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
+
+SECURE_SSL_REDIRECT = bool(
+    deploy_config.get("secure_ssl_redirect", is_https_deployment)
+)
+SECURE_HSTS_SECONDS = max(
+    0,
+    int(deploy_config.get("secure_hsts_seconds", 0)),
+)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = bool(
+    deploy_config.get("secure_hsts_include_subdomains", False)
+)
+SECURE_HSTS_PRELOAD = bool(
+    deploy_config.get("secure_hsts_preload", False)
+)
+
+MYLONITE_DATA_ROOT = DATA_ROOT

@@ -1,0 +1,48 @@
+{% extends "panel/auth_base.html" %}
+
+{% block auth_content %}
+<form method="post" novalidate class="form-grid">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        <ul class="non-field-errors">
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <div class="form-field">
+        {{ form.username.label_tag }}
+        {{ form.username }}
+        {% if form.username.errors %}
+            <ul class="form-errors">
+                {% for error in form.username.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+
+    <div class="form-field">
+        {{ form.password.label_tag }}
+        {{ form.password }}
+        {% if form.password.errors %}
+            <ul class="form-errors">
+                {% for error in form.password.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+
+    {% if next %}
+        <input type="hidden" name="next" value="{{ next }}">
+    {% endif %}
+
+    <div class="button-row">
+        <button class="button" type="submit">Sign in</button>
+        <a class="button button-secondary" href="{% url 'home' %}">Back to homepage</a>
+    </div>
+</form>
+{% endblock %}

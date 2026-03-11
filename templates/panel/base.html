@@ -1,0 +1,71 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if page_title %}{{ page_title }} · {% endif %}Mylonite Admin</title>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+</head>
+<body class="admin-layout">
+    <header class="admin-header">
+        <div class="admin-header-inner">
+            <div class="admin-brand">
+                <a class="admin-brand-title" href="{% url 'panel:dashboard' %}">Mylonite Admin</a>
+                <span class="admin-brand-subtitle">Administrative control panel</span>
+            </div>
+
+            <div class="admin-header-actions">
+                <a class="button button-secondary" href="{% url 'home' %}">View site</a>
+                <span class="admin-user">Signed in as {{ request.user.username }}</span>
+                <form class="admin-inline-form" method="post" action="{% url 'panel:logout' %}">
+                    {% csrf_token %}
+                    <button class="button button-secondary" type="submit">Log out</button>
+                </form>
+            </div>
+        </div>
+    </header>
+
+    <div class="admin-shell">
+        <aside class="admin-sidebar">
+            <section class="card admin-nav-card">
+                <p class="admin-nav-title">Navigation</p>
+                <nav class="admin-nav" aria-label="Administrative navigation">
+                    <a
+                        class="admin-nav-link{% if panel_section == 'dashboard' %} is-active{% endif %}"
+                        href="{% url 'panel:dashboard' %}"
+                    >
+                        Dashboard
+                    </a>
+                    <a
+                        class="admin-nav-link{% if panel_section == 'settings' %} is-active{% endif %}"
+                        href="{% url 'panel:settings' %}"
+                    >
+                        Settings
+                    </a>
+                </nav>
+            </section>
+        </aside>
+
+        <main class="admin-main">
+            <div class="admin-main-header">
+                <p class="eyebrow">Administrative panel</p>
+                <h1 class="admin-main-title">{{ panel_heading }}</h1>
+                {% if panel_description %}
+                    <p class="admin-main-description">{{ panel_description }}</p>
+                {% endif %}
+            </div>
+
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div class="message {{ message.tags|default:'' }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% block panel_content %}{% endblock %}
+        </main>
+    </div>
+</body>
+</html>
