@@ -6,6 +6,7 @@ from django.db import IntegrityError, transaction
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
+from django.utils import timezone
 from django.views import View
 from django.views.generic import FormView, TemplateView
 
@@ -13,7 +14,6 @@ from .forms import OwnerSetupForm, PanelAuthenticationForm, PanelPasswordChangeF
 from .models import SiteSetup
 from .services import (
     InitialSetupAlreadyComplete,
-    get_setup_state,
     owner_setup_lock,
     panel_is_initialized,
     user_is_owner,
@@ -93,8 +93,7 @@ class SetupView(SetupOnlyMixin, PanelContextMixin, FormView):
 
                     user = form.save()
                     setup.owner = user
-                    setup.completed_at = transaction.get_connection().ops.adapt_datetimefield_value
-                    setup.completed_at = None
+                    setup.completed_at = timezone.now()
                     setup.save(update_fields=["owner", "completed_at", "updated_at"])
         except InitialSetupAlreadyComplete:
             form.add_error(
@@ -108,13 +107,6 @@ class SetupView(SetupOnlyMixin, PanelContextMixin, FormView):
                 "The owner account could not be created. Please try again.",
             )
             return self.form_invalid(form)
-
-        setup = SiteSetup.get_solo()
-        if setup.completed_at is None:
-            from django.utils import timezone
-
-            setup.completed_at = timezone.now()
-            setup.save(update_fields=["completed_at", "updated_at"])
 
         login(
             self.request,
@@ -172,8 +164,12 @@ class PanelDashboardView(OwnerRequiredMixin, PanelContextMixin, TemplateView):
     panel_section = "dashboard"
     panel_heading = "Dashboard"
     panel_description = (
-        "This administrative panel is ready for future editors, validation tools, "
-        "and content management features."
+        "This is the administrative control panel for your Mylonite instance. "
+        "Here you will manage and maintain your source of truth: the records, "
+        "settings, and structured content that define your professional profile. "
+        "From this panel, Mylonite will grow to support editing entities, managing "
+        "public pages, validating data, and generating output artifacts such as CVs, "
+        "supporting documents, and other portfolio materials."
     )
 
 

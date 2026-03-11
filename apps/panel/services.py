@@ -3,7 +3,7 @@ from __future__ import annotations
 import fcntl
 from contextlib import contextmanager
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from django.conf import settings
@@ -19,7 +19,7 @@ class InitialSetupAlreadyComplete(Exception):
 @dataclass(frozen=True)
 class LockoutState:
     is_locked: bool
-    locked_until = None
+    locked_until: datetime | None = None
 
 
 def get_setup_state() -> SiteSetup:
@@ -76,7 +76,10 @@ def get_login_lockout(request, username: str) -> LockoutState:
             if locked_until is None or throttle.locked_until > locked_until:
                 locked_until = throttle.locked_until
 
-    return LockoutState(is_locked=locked_until is not None, locked_until=locked_until)
+    return LockoutState(
+        is_locked=locked_until is not None,
+        locked_until=locked_until,
+    )
 
 
 def register_failed_login_attempt(request, username: str) -> None:
