@@ -1,0 +1,23 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: infra/docker/app.Dockerfile
+    image: mylonite:1.0.0
+    environment:
+      DJANGO_SETTINGS_MODULE: mylonite.settings
+      MYLONITE_CONFIG_ROOT: /app/runtime/config
+      MYLONITE_DATA_ROOT: /app/runtime/data
+      MYLONITE_DB_PATH: /app/runtime/data/db/mylonite.sqlite3
+      MYLONITE_CONTENT_ROOT: /app/content
+    volumes:
+      - ${MYLONITE_CONFIG_DIR:-./runtime/config}:/app/runtime/config
+      - ${MYLONITE_DATA_DIR:-./runtime/data}:/app/runtime/data
+      - ${MYLONITE_CONTENT_DIR:-./content}:/app/content:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8000/health/ >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s

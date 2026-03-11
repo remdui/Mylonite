@@ -1,0 +1,107 @@
+:root {
+    --bg: #0b1020;
+    --panel: #131a2b;
+    --text: #e8edf7;
+    --muted: #aab4c7;
+    --accent: #8fb7ff;
+    --line: rgba(255, 255, 255, 0.12);
+    --notice-bg: #18233a;
+    --notice-line: rgba(143, 183, 255, 0.28);
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Inter, system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+}
+
+code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.92em;
+}
+
+.container {
+    width: min(100% - 2rem, 980px);
+    margin: 0 auto;
+}
+
+.content-notice {
+    border-bottom: 1px solid var(--notice-line);
+    background: var(--notice-bg);
+    color: var(--muted);
+}
+
+.content-notice p {
+    margin: 0;
+    padding: 0.8rem 0;
+}
+
+.site-header {
+    border-bottom: 1px solid var(--line);
+    padding: 1rem 0;
+}
+
+.brand {
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.hero {
+    padding: 5rem 0 4rem;
+    max-width: 760px;
+}
+
+.eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.8rem;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+}
+
+h1 {
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    line-height: 1.02;
+    margin: 0 0 1rem;
+}
+
+.headline {
+    font-size: 1.15rem;
+    color: var(--accent);
+    margin: 0 0 1rem;
+}
+
+.tagline {
+    max-width: 62ch;
+    color: var(--muted);
+    font-size: 1.08rem;
+}
+
+.site-footer {
+    border-top: 1px solid var(--line);
+    padding: 1.5rem 0 2rem;
+    margin-top: 3rem;
+}
+
+.footer-inner {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+.footer-note a {
+    color: var(--text);
+}

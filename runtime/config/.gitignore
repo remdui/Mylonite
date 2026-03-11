@@ -1,0 +1,5 @@
+.env
+deploy.toml
+!.env.example
+!deploy.toml.example
+!.gitignore

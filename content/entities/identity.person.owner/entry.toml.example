@@ -1,0 +1,11 @@
+schema_version = 1
+kind = "identity"
+type = "person_profile"
+
+id = "identity.person.owner"
+name = "Your Name"
+full_name = "Your Full Name"
+display_name = "Your Name"
+
+headline = "Professional headline"
+summary = "Write a short summary that explains who you are, what you work on, and what kind of problems or projects interest you."

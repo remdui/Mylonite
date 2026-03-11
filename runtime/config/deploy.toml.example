@@ -1,0 +1,9 @@
+# Optional: set this when deploying behind a real public domain.
+# Example:
+# public_base_url = "https://example.com"
+
+# Optional extra hosts beyond the derived public host.
+additional_allowed_hosts = ["localhost", "127.0.0.1"]
+
+# Optional extra CSRF trusted origins.
+additional_csrf_trusted_origins = ["http://localhost:8000"]

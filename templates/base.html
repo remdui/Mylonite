@@ -1,0 +1,49 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if page_title %}{{ page_title }} · {% endif %}{{ portfolio_site.site_title }}</title>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+</head>
+<body>
+    {% if content_status.using_example_files %}
+        <div class="content-notice">
+            <div class="container">
+                <p>
+                    Using bundled example content.
+                    Create the real files in <code>content/</code> or run
+                    <code>./scripts/init-content.sh</code> to make editable local copies.
+                </p>
+            </div>
+        </div>
+    {% endif %}
+
+    <header class="site-header">
+        <div class="container">
+            <a class="brand" href="/">{{ portfolio_site.site_title }}</a>
+        </div>
+    </header>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <p>© {{ current_year }} {{ owner_profile.full_name|default:portfolio_site.site_title }}</p>
+            {% if portfolio_site.footer_show_generated_by %}
+                <p class="footer-note">
+                    Powered by
+                    {% if portfolio_site.footer_repository_url %}
+                        <a href="{{ portfolio_site.footer_repository_url }}" rel="noreferrer noopener">Mylonite</a>
+                    {% else %}
+                        Mylonite
+                    {% endif %}
+                </p>
+            {% endif %}
+        </div>
+    </footer>
+</body>
+</html>

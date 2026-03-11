@@ -1,0 +1,7 @@
+# Ignore real local content files.
+# Keep tracked example files, docs, and directory structure.
+*
+!*/
+!**/*.example
+!.gitignore
+!README.md

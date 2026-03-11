@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+    <p class="eyebrow">Portfolio</p>
+    <h1>{{ owner_profile.display_name|default:owner_profile.full_name }}</h1>
+
+    {% if owner_profile.headline %}
+        <p class="headline">{{ owner_profile.headline }}</p>
+    {% endif %}
+
+    {% if owner_profile.bio %}
+        <p class="tagline">{{ owner_profile.bio|linebreaksbr }}</p>
+    {% elif owner_profile.summary %}
+        <p class="tagline">{{ owner_profile.summary }}</p>
+    {% endif %}
+</section>
+{% endblock %}
