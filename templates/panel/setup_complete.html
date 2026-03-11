@@ -1,0 +1,20 @@
+{% extends "panel/auth_base.html" %}
+
+{% block auth_content %}
+<div class="stack">
+    <section class="card">
+        <div class="card-body">
+            <h2 class="card-title">Administrative panel URL</h2>
+            <p class="card-text">
+                Use the following URL to access the Mylonite administrative panel:
+            </p>
+            <code class="panel-auth-url">{{ admin_panel_url }}</code>
+        </div>
+    </section>
+
+    <div class="button-row">
+        <a class="button" href="{% url 'panel:dashboard' %}">Open admin panel</a>
+        <a class="button button-secondary" href="{{ homepage_url }}">Exit setup and go to homepage</a>
+    </div>
+</div>
+{% endblock %}

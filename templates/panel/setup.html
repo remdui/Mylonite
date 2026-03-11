@@ -1,0 +1,69 @@
+{% extends "panel/auth_base.html" %}
+
+{% block auth_content %}
+<form method="post" novalidate class="form-grid">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        <ul class="non-field-errors">
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <div class="form-field">
+        {{ form.username.label_tag }}
+        {{ form.username }}
+        {% if form.username.help_text %}
+            <p class="form-help">{{ form.username.help_text }}</p>
+        {% endif %}
+        {% if form.username.errors %}
+            <ul class="form-errors">
+                {% for error in form.username.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+
+    <div class="form-field">
+        {{ form.password1.label_tag }}
+        {{ form.password1 }}
+        {% if form.password1.help_text %}
+            <p class="form-help">{{ form.password1.help_text|safe }}</p>
+        {% endif %}
+        {% if form.password1.errors %}
+            <ul class="form-errors">
+                {% for error in form.password1.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+
+    <div class="form-field">
+        {{ form.password2.label_tag }}
+        {{ form.password2 }}
+        {% if form.password2.help_text %}
+            <p class="form-help">{{ form.password2.help_text|safe }}</p>
+        {% endif %}
+        {% if form.password2.errors %}
+            <ul class="form-errors">
+                {% for error in form.password2.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+
+    <div class="button-row">
+        <button class="button" type="submit">Create owner account</button>
+        <a class="button button-secondary" href="{% url 'home' %}">Back to homepage</a>
+    </div>
+
+    <p class="panel-auth-meta">
+        This setup step is available only until the owner account has been created.
+    </p>
+</form>
+{% endblock %}

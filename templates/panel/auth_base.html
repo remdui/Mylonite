@@ -1,0 +1,33 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if page_title %}{{ page_title }} · {% endif %}Mylonite Admin</title>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+</head>
+<body class="panel-auth-body">
+    <main class="panel-auth-shell">
+        <section class="card panel-auth-card">
+            <div class="panel-auth-header">
+                <p class="eyebrow">Mylonite Admin</p>
+                <h1 class="panel-auth-title">{{ panel_heading }}</h1>
+                {% if panel_description %}
+                    <p class="panel-auth-description">{{ panel_description }}</p>
+                {% endif %}
+            </div>
+
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div class="message {{ message.tags|default:'' }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% block auth_content %}{% endblock %}
+        </section>
+    </main>
+</body>
+</html>

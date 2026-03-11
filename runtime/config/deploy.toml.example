@@ -7,3 +7,20 @@ additional_allowed_hosts = ["localhost", "127.0.0.1"]
 
 # Optional extra CSRF trusted origins.
 additional_csrf_trusted_origins = ["http://localhost:8000"]
+
+# Secure cookies default to true automatically when public_base_url uses https.
+# You can override that behavior explicitly if needed.
+# secure_cookies = true
+
+# HTTPS redirect also defaults to true automatically when public_base_url uses https.
+# secure_ssl_redirect = true
+
+# Enable HSTS only after confirming your public HTTPS deployment is correct.
+# secure_hsts_seconds = 31536000
+# secure_hsts_include_subdomains = true
+# secure_hsts_preload = false
+
+# Administrative panel login throttling.
+# panel_login_failure_limit = 5
+# panel_login_failure_window_seconds = 900
+# panel_login_lockout_seconds = 900
