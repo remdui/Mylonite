@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 
 
 RUNTIME_ENV_HEADER = [
@@ -41,22 +42,45 @@ def safe_chmod(path: Path, mode: int) -> None:
         pass
 
 
+def atomic_write_text(path: Path, content: str, mode: int) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    temp_path: Path | None = None
+
+    try:
+        with NamedTemporaryFile(
+            "w",
+            encoding="utf-8",
+            dir=path.parent,
+            delete=False,
+        ) as handle:
+            temp_path = Path(handle.name)
+            handle.write(content)
+
+        safe_chmod(temp_path, mode)
+        temp_path.replace(path)
+        safe_chmod(path, mode)
+    finally:
+        if temp_path is not None and temp_path.exists():
+            try:
+                temp_path.unlink()
+            except OSError:
+                pass
+
+
 def write_simple_env(
     path: Path,
     values: dict[str, str],
     *,
     header_lines: list[str] | None = None,
 ) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-
     lines: list[str] = []
     if header_lines:
         lines.extend(header_lines)
 
     lines.extend(f"{key}={value}" for key, value in values.items())
 
-    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    safe_chmod(path, 0o600)
+    atomic_write_text(path, "\n".join(lines) + "\n", 0o600)
 
 
 def update_simple_env(path: Path, updates: dict[str, str]) -> None:
@@ -81,16 +105,13 @@ def update_simple_env(path: Path, updates: dict[str, str]) -> None:
         if key not in updated_keys:
             new_lines.append(f"{key}={value}")
 
-    path.write_text("\n".join(new_lines).rstrip() + "\n", encoding="utf-8")
-    safe_chmod(path, 0o600)
+    atomic_write_text(path, "\n".join(new_lines).rstrip() + "\n", 0o600)
 
 
 def ensure_runtime_env_file(path: Path) -> tuple[bool, bool]:
     from django.core.management.utils import get_random_secret_key
 
     values = load_simple_env(path)
-    created = False
-    updated = False
 
     if not path.exists():
         values = {
@@ -103,7 +124,7 @@ def ensure_runtime_env_file(path: Path) -> tuple[bool, bool]:
             },
         }
         write_simple_env(path, values, header_lines=RUNTIME_ENV_HEADER)
-        return True, True
+        return True, False
 
     updates: dict[str, str] = {}
     if not values.get("DJANGO_SECRET_KEY", "").strip():
@@ -111,8 +132,7 @@ def ensure_runtime_env_file(path: Path) -> tuple[bool, bool]:
 
     if updates:
         update_simple_env(path, updates)
-        updated = True
-    else:
-        safe_chmod(path, 0o600)
+        return False, True
 
-    return created, updated
+    safe_chmod(path, 0o600)
+    return False, False

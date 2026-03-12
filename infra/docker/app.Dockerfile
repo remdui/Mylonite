@@ -2,10 +2,12 @@ FROM python:3.12-slim-bookworm
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
+    PIP_NO_CACHE_DIR=1 \
+    HOME=/tmp
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
+    gosu \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -16,18 +18,14 @@ COPY mylonite /app/mylonite
 COPY apps /app/apps
 COPY templates /app/templates
 COPY static /app/static
-COPY infra/docker/entrypoint.sh /entrypoint.sh
+COPY infra/docker/entrypoint.sh /usr/local/bin/mylonite-entrypoint
 
-RUN pip install --upgrade pip && pip install .
-
-RUN useradd --uid 1000 --create-home --shell /bin/bash appuser \
-    && mkdir -p /app/runtime/data \
-    && chown -R appuser:appuser /app /entrypoint.sh \
-    && chmod +x /entrypoint.sh
-
-USER appuser
+RUN python -m pip install --upgrade pip \
+    && python -m pip install . \
+    && mkdir -p /config /data /content \
+    && chmod 0755 /usr/local/bin/mylonite-entrypoint
 
 EXPOSE 8000
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/mylonite-entrypoint"]
 CMD ["gunicorn", "mylonite.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2"]

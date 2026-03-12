@@ -3,18 +3,28 @@ services:
     build:
       context: .
       dockerfile: infra/docker/app.Dockerfile
-    image: mylonite:1.0.0
     environment:
       DJANGO_SETTINGS_MODULE: mylonite.settings
-      MYLONITE_CONFIG_ROOT: /app/runtime/config
-      MYLONITE_DATA_ROOT: /app/runtime/data
-      MYLONITE_DB_PATH: /app/runtime/data/db/mylonite.sqlite3
-      MYLONITE_CONTENT_ROOT: /app/content
+      MYLONITE_CONFIG_ROOT: /config
+      MYLONITE_DATA_ROOT: /data
+      MYLONITE_DB_PATH: /data/db/mylonite.sqlite3
+      MYLONITE_CONTENT_ROOT: /content
     volumes:
-      - ${MYLONITE_CONFIG_DIR:-./runtime/config}:/app/runtime/config
-      - ${MYLONITE_DATA_DIR:-./runtime/data}:/app/runtime/data
-      - ${MYLONITE_CONTENT_DIR:-./content}:/app/content:ro
+      - type: bind
+        source: ${MYLONITE_CONFIG_DIR:-./runtime/config}
+        target: /config
+      - type: bind
+        source: ${MYLONITE_DATA_DIR:-./runtime/data}
+        target: /data
+      - type: bind
+        source: ${MYLONITE_CONTENT_DIR:-./content}
+        target: /content
+        read_only: true
     restart: unless-stopped
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8000/health/ >/dev/null || exit 1"]
       interval: 30s

@@ -68,6 +68,3 @@ staticfiles/
 # Dev tools
 code_overview.py
 project_dump.txt
-
-# Poetry files
-poetry.lock

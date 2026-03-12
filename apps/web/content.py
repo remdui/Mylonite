@@ -1,11 +1,10 @@
-import os
 import tomllib
 from datetime import date
 from pathlib import Path
 
+from django.conf import settings
 
-BASE_DIR = Path(__file__).resolve().parents[2]
-CONTENT_ROOT = Path(os.getenv("MYLONITE_CONTENT_ROOT", BASE_DIR / "content"))
+CONTENT_ROOT = Path(settings.MYLONITE_CONTENT_ROOT)
 
 
 def example_path(path: Path) -> Path:

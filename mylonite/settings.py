@@ -8,14 +8,16 @@ from mylonite.runtime import load_simple_env
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-RUNTIME_CONFIG_ROOT = Path(os.getenv("MYLONITE_CONFIG_ROOT", BASE_DIR / "runtime" / "config"))
-RUNTIME_ENV_FILE = RUNTIME_CONFIG_ROOT / ".env"
+CONFIG_ROOT = Path(os.getenv("MYLONITE_CONFIG_ROOT", BASE_DIR / "runtime" / "config"))
+RUNTIME_ENV_FILE = CONFIG_ROOT / ".env"
 DATA_ROOT = Path(os.getenv("MYLONITE_DATA_ROOT", BASE_DIR / "runtime" / "data"))
+CONTENT_ROOT = Path(os.getenv("MYLONITE_CONTENT_ROOT", BASE_DIR / "content"))
 DB_PATH = Path(os.getenv("MYLONITE_DB_PATH", DATA_ROOT / "db" / "mylonite.sqlite3"))
-STATIC_ROOT = DATA_ROOT / "static"
-MEDIA_ROOT = DATA_ROOT / "media"
+STATIC_ROOT_PATH = DATA_ROOT / "static"
+MEDIA_ROOT_PATH = DATA_ROOT / "media"
+DEPLOY_CONFIG_PATH = CONFIG_ROOT / "deploy.toml"
 
-for path in [RUNTIME_CONFIG_ROOT, DATA_ROOT, DB_PATH.parent, STATIC_ROOT, MEDIA_ROOT]:
+for path in [CONFIG_ROOT, DATA_ROOT, DB_PATH.parent, STATIC_ROOT_PATH, MEDIA_ROOT_PATH]:
     path.mkdir(parents=True, exist_ok=True)
 
 
@@ -49,7 +51,7 @@ def load_proxy_networks(values: list[str]) -> tuple:
             networks.append(ip_network(candidate, strict=False))
         except ValueError as exc:
             raise RuntimeError(
-                "runtime/config/deploy.toml: trusted_proxy_cidrs must contain valid CIDR values."
+                f"{DEPLOY_CONFIG_PATH.as_posix()}: trusted_proxy_cidrs must contain valid CIDR values."
             ) from exc
 
     return tuple(networks)
@@ -68,7 +70,7 @@ if not SECRET_KEY:
 
 SECRET_KEY_FALLBACKS = get_csv_setting("DJANGO_SECRET_KEY_FALLBACKS")
 
-deploy_config = load_toml(RUNTIME_CONFIG_ROOT / "deploy.toml")
+deploy_config = load_toml(DEPLOY_CONFIG_PATH)
 
 public_base_url = deploy_config.get("public_base_url", "").strip()
 additional_allowed_hosts = deploy_config.get("additional_allowed_hosts", [])
@@ -83,11 +85,15 @@ if public_base_url:
     parsed_public_base_url = urlparse(public_base_url)
 
     if not parsed_public_base_url.scheme or not parsed_public_base_url.netloc:
-        raise RuntimeError("runtime/config/deploy.toml: public_base_url must be a full URL.")
+        raise RuntimeError(
+            f"{DEPLOY_CONFIG_PATH.as_posix()}: public_base_url must be a full URL."
+        )
 
     primary_host = parsed_public_base_url.hostname
     if not primary_host:
-        raise RuntimeError("runtime/config/deploy.toml: public_base_url must contain a hostname.")
+        raise RuntimeError(
+            f"{DEPLOY_CONFIG_PATH.as_posix()}: public_base_url must contain a hostname."
+        )
 
     ALLOWED_HOSTS.append(primary_host)
     CSRF_TRUSTED_ORIGINS.append(
@@ -194,11 +200,11 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "/static/"
-STATIC_ROOT = STATIC_ROOT
+STATIC_ROOT = STATIC_ROOT_PATH
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = MEDIA_ROOT
+MEDIA_ROOT = MEDIA_ROOT_PATH
 
 STORAGES = {
     "default": {
@@ -232,6 +238,7 @@ CSRF_COOKIE_SECURE = bool(
 )
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = "Lax"
 
 SECURE_SSL_REDIRECT = bool(
@@ -248,4 +255,6 @@ SECURE_HSTS_PRELOAD = bool(
     deploy_config.get("secure_hsts_preload", False)
 )
 
+MYLONITE_CONFIG_ROOT = CONFIG_ROOT
+MYLONITE_CONTENT_ROOT = CONTENT_ROOT
 MYLONITE_DATA_ROOT = DATA_ROOT
