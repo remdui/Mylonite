@@ -3,21 +3,34 @@
 .gitattributes
 .github/
 .idea/
+.vscode/
+
 .venv/
 venv/
 env/
+ENV/
+
 __pycache__/
 *.py[cod]
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 .coverage
+.coverage.*
 htmlcov/
 
 .env
-runtime/config/.env
-runtime/config/deploy.toml
-runtime/data/
+.env.local
+.env.*.local
+
+runtime/
 content/
 
+compose*.yaml
+CONTRIBUTING.md
+poetry.lock
+scripts/
+
 README-local.md
+code_overview.py
+project_dump.txt

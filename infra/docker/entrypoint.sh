@@ -4,65 +4,46 @@ set -eu
 CONFIG_ROOT="${MYLONITE_CONFIG_ROOT:-/config}"
 DATA_ROOT="${MYLONITE_DATA_ROOT:-/data}"
 CONTENT_ROOT="${MYLONITE_CONTENT_ROOT:-/content}"
+DB_PATH="${MYLONITE_DB_PATH:-$DATA_ROOT/db/mylonite.sqlite3}"
 
-pick_runtime_owner() {
-  for candidate in "$CONFIG_ROOT" "$CONTENT_ROOT" "$DATA_ROOT"; do
-    if [ -e "$candidate" ]; then
-      candidate_uid="$(stat -c '%u' "$candidate")"
-      candidate_gid="$(stat -c '%g' "$candidate")"
-
-      if [ "$candidate_uid" != "0" ] || [ "$candidate_gid" != "0" ]; then
-        echo "${candidate_uid}:${candidate_gid}"
-        return 0
-      fi
-    fi
-  done
-
-  echo "0:0"
+ensure_dir() {
+  install -d -m 0755 "$1"
 }
 
-ensure_owner() {
-  path="$1"
-  owner="$2"
+probe_writable_dir() {
+  dir="$1"
+  probe="$dir/.mylonite-write-test.$$"
 
-  if [ ! -e "$path" ]; then
-    return 0
+  if ! : > "$probe" 2>/dev/null; then
+    echo >&2 "ERROR: directory '$dir' is not writable."
+    echo >&2 "Check that the bind-mounted host path exists and is mounted read-write."
+    exit 1
   fi
 
-  current_owner="$(stat -c '%u:%g' "$path")"
-  if [ "$current_owner" != "$owner" ]; then
-    chown -R "$owner" "$path"
-  fi
-}
-
-run_as_runtime_user() {
-  if [ "$RUN_AS_OWNER" = "0:0" ]; then
-    "$@"
-  else
-    gosu "$RUN_AS_OWNER" "$@"
-  fi
+  rm -f "$probe"
 }
 
 umask 0022
 
-mkdir -p \
-  "$CONFIG_ROOT" \
-  "$DATA_ROOT/db" \
-  "$DATA_ROOT/static" \
-  "$DATA_ROOT/media"
+ensure_dir "$CONFIG_ROOT"
+ensure_dir "$DATA_ROOT"
+ensure_dir "$(dirname "$DB_PATH")"
+ensure_dir "$DATA_ROOT/static"
+ensure_dir "$DATA_ROOT/media"
 
-RUN_AS_OWNER="$(pick_runtime_owner)"
+probe_writable_dir "$CONFIG_ROOT"
+probe_writable_dir "$DATA_ROOT"
+probe_writable_dir "$(dirname "$DB_PATH")"
 
-if [ "$RUN_AS_OWNER" != "0:0" ]; then
-  ensure_owner "$CONFIG_ROOT" "$RUN_AS_OWNER"
-  ensure_owner "$DATA_ROOT" "$RUN_AS_OWNER"
-fi
+touch "$DB_PATH"
+chmod 0644 "$DB_PATH" || true
 
 export MYLONITE_CONFIG_ROOT="$CONFIG_ROOT"
 export MYLONITE_DATA_ROOT="$DATA_ROOT"
 export MYLONITE_CONTENT_ROOT="$CONTENT_ROOT"
+export MYLONITE_DB_PATH="$DB_PATH"
 
-run_as_runtime_user python - <<'PY'
+python - <<'PY'
 import os
 from pathlib import Path
 
@@ -79,11 +60,7 @@ elif updated:
     print(f"Updated {env_file} with a generated Django secret key.")
 PY
 
-run_as_runtime_user python manage.py migrate --noinput
-run_as_runtime_user python manage.py collectstatic --noinput
+python manage.py migrate --noinput
+python manage.py collectstatic --noinput
 
-if [ "$RUN_AS_OWNER" = "0:0" ]; then
-  exec "$@"
-else
-  exec gosu "$RUN_AS_OWNER" "$@"
-fi
+exec "$@"
