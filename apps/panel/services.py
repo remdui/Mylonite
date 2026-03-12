@@ -4,6 +4,7 @@ import fcntl
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from ipaddress import ip_address
 from pathlib import Path
 
 from django.conf import settings
@@ -52,8 +53,48 @@ def normalize_username(username: str) -> str:
     return username.strip().casefold()
 
 
+def is_trusted_proxy(remote_addr: str) -> bool:
+    if not remote_addr:
+        return False
+
+    try:
+        remote_ip = ip_address(remote_addr)
+    except ValueError:
+        return False
+
+    return any(remote_ip in network for network in settings.MYLONITE_TRUSTED_PROXY_CIDRS)
+
+
+def get_forwarded_client_ip(request) -> str | None:
+    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR", "")
+    if x_forwarded_for:
+        candidate = x_forwarded_for.split(",")[0].strip()
+        try:
+            ip_address(candidate)
+            return candidate
+        except ValueError:
+            pass
+
+    x_real_ip = request.META.get("HTTP_X_REAL_IP", "").strip()
+    if x_real_ip:
+        try:
+            ip_address(x_real_ip)
+            return x_real_ip
+        except ValueError:
+            pass
+
+    return None
+
+
 def get_client_identifier(request) -> str:
-    return request.META.get("REMOTE_ADDR", "unknown")
+    remote_addr = request.META.get("REMOTE_ADDR", "").strip()
+
+    if is_trusted_proxy(remote_addr):
+        forwarded_ip = get_forwarded_client_ip(request)
+        if forwarded_ip:
+            return forwarded_ip
+
+    return remote_addr or "unknown"
 
 
 def build_throttle_keys(request, username: str) -> list[str]:

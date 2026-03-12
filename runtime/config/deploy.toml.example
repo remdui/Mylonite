@@ -8,6 +8,14 @@ additional_allowed_hosts = ["localhost", "127.0.0.1"]
 # Optional extra CSRF trusted origins.
 additional_csrf_trusted_origins = ["http://localhost:8000"]
 
+# When running behind a reverse proxy, trust forwarded headers only from known proxy networks.
+# This affects:
+# - request.is_secure()
+# - login throttling client IP detection
+#
+# Example for a dedicated Docker bridge network used by Caddy:
+# trusted_proxy_cidrs = ["172.20.0.0/16"]
+
 # Secure cookies default to true automatically when public_base_url uses https.
 # You can override that behavior explicitly if needed.
 # secure_cookies = true

@@ -1,7 +1,10 @@
 import os
 import tomllib
+from ipaddress import ip_network
 from pathlib import Path
 from urllib.parse import urlparse
+
+from mylonite.runtime import load_simple_env
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -23,28 +26,6 @@ def load_toml(path: Path) -> dict:
         return tomllib.load(handle)
 
 
-def load_simple_env(path: Path) -> dict[str, str]:
-    if not path.exists():
-        return {}
-
-    values: dict[str, str] = {}
-    for raw_line in path.read_text(encoding="utf-8").splitlines():
-        line = raw_line.strip()
-        if not line or line.startswith("#") or "=" not in raw_line:
-            continue
-
-        key, value = raw_line.split("=", 1)
-        key = key.strip()
-        value = value.strip()
-
-        if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
-            value = value[1:-1]
-
-        values[key] = value
-
-    return values
-
-
 def get_setting(name: str, default: str = "") -> str:
     if name in os.environ:
         return os.environ[name]
@@ -56,6 +37,24 @@ def get_csv_setting(name: str) -> list[str]:
     return [item.strip() for item in value.split(",") if item.strip()]
 
 
+def load_proxy_networks(values: list[str]) -> tuple:
+    networks = []
+
+    for value in values:
+        candidate = value.strip()
+        if not candidate:
+            continue
+
+        try:
+            networks.append(ip_network(candidate, strict=False))
+        except ValueError as exc:
+            raise RuntimeError(
+                "runtime/config/deploy.toml: trusted_proxy_cidrs must contain valid CIDR values."
+            ) from exc
+
+    return tuple(networks)
+
+
 RUNTIME_ENV = load_simple_env(RUNTIME_ENV_FILE)
 
 DEBUG = get_setting("DJANGO_DEBUG", "false").lower() in {"1", "true", "yes", "on"}
@@ -65,9 +64,7 @@ if not SECRET_KEY:
     if DEBUG:
         SECRET_KEY = "dev-only-insecure-secret-key"
     else:
-        raise RuntimeError(
-            "DJANGO_SECRET_KEY must be set when DJANGO_DEBUG=false."
-        )
+        raise RuntimeError("DJANGO_SECRET_KEY must be set when DJANGO_DEBUG=false.")
 
 SECRET_KEY_FALLBACKS = get_csv_setting("DJANGO_SECRET_KEY_FALLBACKS")
 
@@ -76,6 +73,7 @@ deploy_config = load_toml(RUNTIME_CONFIG_ROOT / "deploy.toml")
 public_base_url = deploy_config.get("public_base_url", "").strip()
 additional_allowed_hosts = deploy_config.get("additional_allowed_hosts", [])
 additional_csrf_trusted_origins = deploy_config.get("additional_csrf_trusted_origins", [])
+trusted_proxy_cidrs = deploy_config.get("trusted_proxy_cidrs", [])
 
 parsed_public_base_url = None
 ALLOWED_HOSTS = []
@@ -108,6 +106,8 @@ if not CSRF_TRUSTED_ORIGINS:
 is_https_deployment = bool(
     parsed_public_base_url and parsed_public_base_url.scheme.lower() == "https"
 )
+
+MYLONITE_TRUSTED_PROXY_CIDRS = load_proxy_networks(trusted_proxy_cidrs)
 
 PANEL_LOGIN_FAILURE_LIMIT = max(
     1,
@@ -215,7 +215,11 @@ LOGIN_URL = "/admin/login/"
 LOGIN_REDIRECT_URL = "/admin/dashboard/"
 LOGOUT_REDIRECT_URL = "/"
 
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_PROXY_SSL_HEADER = (
+    ("HTTP_X_FORWARDED_PROTO", "https")
+    if MYLONITE_TRUSTED_PROXY_CIDRS
+    else None
+)
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 X_FRAME_OPTIONS = "DENY"
