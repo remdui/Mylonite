@@ -204,9 +204,5 @@ Mylonite/
 
 ## License
 
-Copyright (c) 2026 Remy Duijsens
-
-This project is licensed under the MIT License. See the `LICENSE` file for details.
-
-Unless stated otherwise, non-code content and branding assets are not covered by the MIT License.
+Licensed under the GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later). See the `LICENSE` file for details.
 
