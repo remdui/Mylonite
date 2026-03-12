@@ -19,4 +19,4 @@ Thanks for your interest in contributing.
 
 ## Licensing
 
-By submitting a contribution, you agree that your contributions are licensed under the MIT License used by this project.
+By submitting a contribution, you agree that your contributions are licensed under the AGPLv3 License used by this project.
