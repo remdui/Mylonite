@@ -43,6 +43,11 @@ coverage html
 Then open `htmlcov/index.html` in your browser.
 
 
+## Continuous Integration
+
+- GitHub Actions runs the full test suite on pushes to `main` and on pull requests.
+- Pull requests also run dependency review checks for newly introduced vulnerable dependencies.
+
 
 ## Guidelines
 
