@@ -19,6 +19,30 @@ Thanks for your interest in contributing.
 DJANGO_DEBUG=true python manage.py test
 ```
 
+### Code coverage
+
+Install dev tooling (includes `coverage`):
+
+```bash
+pip install -e .[dev]
+```
+
+Run tests with coverage and print a terminal summary:
+
+```bash
+DJANGO_DEBUG=true coverage run --rcfile=.coveragerc manage.py test
+coverage report -m
+```
+
+Generate an HTML coverage report:
+
+```bash
+coverage html
+```
+
+Then open `htmlcov/index.html` in your browser.
+
+
 
 ## Guidelines
 
