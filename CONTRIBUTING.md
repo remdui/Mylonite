@@ -10,6 +10,45 @@ Thanks for your interest in contributing.
 - Add or update tests and documentation where relevant
 - Open a pull request with a clear explanation
 
+## Testing
+
+- Centralized test suite lives under `tests/` and mirrors source package structure (for example `tests/apps/panel/` for `apps/panel/`).
+- Run all tests with:
+
+```bash
+DJANGO_DEBUG=true python manage.py test
+```
+
+### Code coverage
+
+Install dev tooling (includes `coverage`):
+
+```bash
+pip install -e .[dev]
+```
+
+Run tests with coverage and print a terminal summary:
+
+```bash
+DJANGO_DEBUG=true coverage run --rcfile=.coveragerc manage.py test
+coverage report -m
+```
+
+Generate an HTML coverage report:
+
+```bash
+coverage html
+```
+
+Then open `htmlcov/index.html` in your browser.
+
+
+## Continuous Integration
+
+- GitHub Actions runs the full test suite on pushes to `main` and on pull requests.
+- Pull requests also run dependency review checks for newly introduced vulnerable dependencies.
+
+
 ## Guidelines
 
 - Keep changes focused and small where possible

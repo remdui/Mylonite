@@ -25,3 +25,8 @@ Repository = "https://github.com/remdui/mylonite"
 
 [tool.setuptools.packages.find]
 include = ["mylonite*", "apps*"]
+
+[project.optional-dependencies]
+dev = [
+  "coverage[toml]>=7.6,<8.0",
+]
