@@ -45,7 +45,9 @@ class OwnerRequiredMixin:
             return redirect(f"{self.login_url}?next={request.get_full_path()}")
 
         if not user_is_owner(request.user):
-            raise PermissionDenied("You do not have access to this administrative panel.")
+            raise PermissionDenied(
+                "You do not have access to this administrative panel."
+            )
 
         return super().dispatch(request, *args, **kwargs)
 

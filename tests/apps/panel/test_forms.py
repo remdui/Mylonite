@@ -9,6 +9,7 @@ from apps.panel.forms import OwnerSetupForm
 
 User = get_user_model()
 
+
 class OwnerSetupFormTests(TestCase):
     def test_save_creates_owner_with_admin_permissions(self):
         form = OwnerSetupForm(
@@ -27,9 +28,11 @@ class OwnerSetupFormTests(TestCase):
         self.assertTrue(user.is_superuser)
         self.assertTrue(User.objects.filter(username="owner").exists())
 
+
 @dataclass
 class DummyLockout:
     is_locked: bool
+
 
 class PanelAuthenticationFormTests(TestCase):
     def setUp(self):
@@ -40,7 +43,10 @@ class PanelAuthenticationFormTests(TestCase):
     def test_locked_user_fails_before_authentication(self):
         request = self.factory.post("/admin/login/")
 
-        with patch("apps.panel.forms.get_login_lockout", return_value=DummyLockout(is_locked=True)):
+        with patch(
+            "apps.panel.forms.get_login_lockout",
+            return_value=DummyLockout(is_locked=True),
+        ):
             form = PanelAuthenticationForm(
                 request=request,
                 data={"username": "owner", "password": "wrong"},

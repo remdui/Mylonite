@@ -11,7 +11,9 @@ User = get_user_model()
 @override_settings(
     STORAGES={
         "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
+        },
     }
 )
 class PanelViewTests(TestCase):
@@ -19,7 +21,9 @@ class PanelViewTests(TestCase):
         self.owner_password = "StrongPassword123!"
 
     def create_owner_and_initialize(self, username="owner"):
-        owner = User.objects.create_user(username=username, password=self.owner_password)
+        owner = User.objects.create_user(
+            username=username, password=self.owner_password
+        )
         setup = SiteSetup.get_solo()
         setup.owner = owner
         setup.save(update_fields=["owner", "updated_at"])
@@ -39,7 +43,9 @@ class PanelViewTests(TestCase):
             },
         )
 
-        self.assertRedirects(response, reverse("panel:setup_complete"), fetch_redirect_response=False)
+        self.assertRedirects(
+            response, reverse("panel:setup_complete"), fetch_redirect_response=False
+        )
         owner = User.objects.get(username="owner")
         self.assertTrue(owner.is_superuser)
         self.assertEqual(SiteSetup.get_solo().owner_id, owner.id)
@@ -47,19 +53,25 @@ class PanelViewTests(TestCase):
     def test_setup_redirects_to_root_when_already_initialized(self):
         self.create_owner_and_initialize()
         response = self.client.get(reverse("panel:setup"))
-        self.assertRedirects(response, reverse("panel:root"), fetch_redirect_response=False)
+        self.assertRedirects(
+            response, reverse("panel:root"), fetch_redirect_response=False
+        )
 
     def test_admin_root_redirects_to_login_for_anonymous_initialized(self):
         self.create_owner_and_initialize()
         response = self.client.get(reverse("panel:root"))
-        self.assertRedirects(response, reverse("panel:login"), fetch_redirect_response=False)
+        self.assertRedirects(
+            response, reverse("panel:login"), fetch_redirect_response=False
+        )
 
     def test_admin_root_redirects_owner_to_dashboard(self):
         owner = self.create_owner_and_initialize()
         self.client.force_login(owner)
 
         response = self.client.get(reverse("panel:root"))
-        self.assertRedirects(response, reverse("panel:dashboard"), fetch_redirect_response=False)
+        self.assertRedirects(
+            response, reverse("panel:dashboard"), fetch_redirect_response=False
+        )
 
     def test_dashboard_requires_owner_permission(self):
         self.create_owner_and_initialize()
@@ -74,7 +86,9 @@ class PanelViewTests(TestCase):
         self.client.force_login(owner)
 
         response = self.client.get(reverse("panel:setup_complete"))
-        self.assertRedirects(response, reverse("panel:dashboard"), fetch_redirect_response=False)
+        self.assertRedirects(
+            response, reverse("panel:dashboard"), fetch_redirect_response=False
+        )
 
     def test_setup_complete_renders_with_session_flag(self):
         owner = self.create_owner_and_initialize()
@@ -90,7 +104,9 @@ class PanelViewTests(TestCase):
 
     def test_login_view_redirects_to_setup_when_uninitialized(self):
         response = self.client.get(reverse("panel:login"))
-        self.assertRedirects(response, reverse("panel:setup"), fetch_redirect_response=False)
+        self.assertRedirects(
+            response, reverse("panel:setup"), fetch_redirect_response=False
+        )
 
     def test_initialized_login_view_is_accessible(self):
         self.create_owner_and_initialize()
@@ -108,7 +124,9 @@ class PanelViewTests(TestCase):
             },
         )
 
-        self.assertRedirects(response, reverse("panel:dashboard"), fetch_redirect_response=False)
+        self.assertRedirects(
+            response, reverse("panel:dashboard"), fetch_redirect_response=False
+        )
 
     def test_failed_login_throttles_after_configured_attempts(self):
         self.create_owner_and_initialize()

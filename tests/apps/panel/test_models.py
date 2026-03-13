@@ -29,7 +29,9 @@ class SiteSetupModelTests(TestCase):
         self.assertFalse(setup.is_initialized)
         self.assertEqual(str(setup), "Mylonite setup (uninitialized)")
 
-        owner = User.objects.create_user(username="owner", password="StrongPassword123!")
+        owner = User.objects.create_user(
+            username="owner", password="StrongPassword123!"
+        )
         setup.owner = owner
         setup.save(update_fields=["owner", "updated_at"])
 

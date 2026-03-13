@@ -62,7 +62,9 @@ def is_trusted_proxy(remote_addr: str) -> bool:
     except ValueError:
         return False
 
-    return any(remote_ip in network for network in settings.MYLONITE_TRUSTED_PROXY_CIDRS)
+    return any(
+        remote_ip in network for network in settings.MYLONITE_TRUSTED_PROXY_CIDRS
+    )
 
 
 def get_forwarded_client_ip(request) -> str | None:
@@ -153,4 +155,6 @@ def register_failed_login_attempt(request, username: str) -> None:
 
 
 def clear_login_throttle(request, username: str) -> None:
-    LoginThrottle.objects.filter(key__in=build_throttle_keys(request, username)).delete()
+    LoginThrottle.objects.filter(
+        key__in=build_throttle_keys(request, username)
+    ).delete()

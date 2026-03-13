@@ -74,7 +74,9 @@ deploy_config = load_toml(DEPLOY_CONFIG_PATH)
 
 public_base_url = deploy_config.get("public_base_url", "").strip()
 additional_allowed_hosts = deploy_config.get("additional_allowed_hosts", [])
-additional_csrf_trusted_origins = deploy_config.get("additional_csrf_trusted_origins", [])
+additional_csrf_trusted_origins = deploy_config.get(
+    "additional_csrf_trusted_origins", []
+)
 trusted_proxy_cidrs = deploy_config.get("trusted_proxy_cidrs", [])
 
 parsed_public_base_url = None
@@ -222,20 +224,14 @@ LOGIN_REDIRECT_URL = "/admin/dashboard/"
 LOGOUT_REDIRECT_URL = "/"
 
 SECURE_PROXY_SSL_HEADER = (
-    ("HTTP_X_FORWARDED_PROTO", "https")
-    if MYLONITE_TRUSTED_PROXY_CIDRS
-    else None
+    ("HTTP_X_FORWARDED_PROTO", "https") if MYLONITE_TRUSTED_PROXY_CIDRS else None
 )
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 X_FRAME_OPTIONS = "DENY"
 
-SESSION_COOKIE_SECURE = bool(
-    deploy_config.get("secure_cookies", is_https_deployment)
-)
-CSRF_COOKIE_SECURE = bool(
-    deploy_config.get("secure_cookies", is_https_deployment)
-)
+SESSION_COOKIE_SECURE = bool(deploy_config.get("secure_cookies", is_https_deployment))
+CSRF_COOKIE_SECURE = bool(deploy_config.get("secure_cookies", is_https_deployment))
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_HTTPONLY = True
@@ -251,9 +247,7 @@ SECURE_HSTS_SECONDS = max(
 SECURE_HSTS_INCLUDE_SUBDOMAINS = bool(
     deploy_config.get("secure_hsts_include_subdomains", False)
 )
-SECURE_HSTS_PRELOAD = bool(
-    deploy_config.get("secure_hsts_preload", False)
-)
+SECURE_HSTS_PRELOAD = bool(deploy_config.get("secure_hsts_preload", False))
 
 MYLONITE_CONFIG_ROOT = CONFIG_ROOT
 MYLONITE_CONTENT_ROOT = CONTENT_ROOT

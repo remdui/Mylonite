@@ -15,13 +15,26 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="LoginThrottle",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 ("key", models.CharField(max_length=255, unique=True)),
                 ("failure_count", models.PositiveIntegerField(default=0)),
                 ("first_failure_at", models.DateTimeField()),
                 ("last_failure_at", models.DateTimeField()),
                 ("locked_until", models.DateTimeField(blank=True, null=True)),
-                ("created_at", models.DateTimeField(default=django.utils.timezone.now, editable=False)),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now, editable=False
+                    ),
+                ),
                 ("updated_at", models.DateTimeField(auto_now=True)),
             ],
             options={
@@ -32,9 +45,19 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="SiteSetup",
             fields=[
-                ("id", models.PositiveSmallIntegerField(default=1, editable=False, primary_key=True, serialize=False)),
+                (
+                    "id",
+                    models.PositiveSmallIntegerField(
+                        default=1, editable=False, primary_key=True, serialize=False
+                    ),
+                ),
                 ("completed_at", models.DateTimeField(blank=True, null=True)),
-                ("created_at", models.DateTimeField(default=django.utils.timezone.now, editable=False)),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now, editable=False
+                    ),
+                ),
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 (
                     "owner",

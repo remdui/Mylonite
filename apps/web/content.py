@@ -20,7 +20,9 @@ def build_source_info(
     return {
         "requested_path": requested_path.relative_to(CONTENT_ROOT).as_posix(),
         "resolved_path": (
-            resolved_path.relative_to(CONTENT_ROOT).as_posix() if resolved_path else None
+            resolved_path.relative_to(CONTENT_ROOT).as_posix()
+            if resolved_path
+            else None
         ),
         "used_example": used_example,
         "missing": resolved_path is None,
@@ -96,7 +98,9 @@ def build_content_status(sources: list[dict]) -> dict:
         for source in sources
         if source["used_example"] and source["resolved_path"]
     ]
-    missing_files = [source["requested_path"] for source in sources if source["missing"]]
+    missing_files = [
+        source["requested_path"] for source in sources if source["missing"]
+    ]
 
     return {
         "using_example_files": bool(example_files),

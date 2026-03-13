@@ -71,7 +71,9 @@ class RuntimeEnvTests(SimpleTestCase):
     def test_ensure_runtime_env_file_noop_when_secret_exists(self):
         with TemporaryDirectory() as tmp:
             path = Path(tmp) / ".env"
-            path.write_text("DJANGO_SECRET_KEY=present\nDJANGO_DEBUG=false\n", encoding="utf-8")
+            path.write_text(
+                "DJANGO_SECRET_KEY=present\nDJANGO_DEBUG=false\n", encoding="utf-8"
+            )
 
             created, updated = ensure_runtime_env_file(path)
 

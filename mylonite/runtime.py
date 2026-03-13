@@ -115,7 +115,8 @@ def ensure_runtime_env_file(path: Path) -> tuple[bool, bool]:
 
     if not path.exists():
         values = {
-            "DJANGO_SECRET_KEY": values.get("DJANGO_SECRET_KEY") or get_random_secret_key(),
+            "DJANGO_SECRET_KEY": values.get("DJANGO_SECRET_KEY")
+            or get_random_secret_key(),
             "DJANGO_DEBUG": values.get("DJANGO_DEBUG", "false") or "false",
             **{
                 key: value

@@ -1,9 +1,17 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm, UserCreationForm
+from django.contrib.auth.forms import (
+    AuthenticationForm,
+    PasswordChangeForm,
+    UserCreationForm,
+)
 from django.core.exceptions import ValidationError
 
-from .services import clear_login_throttle, get_login_lockout, register_failed_login_attempt
+from .services import (
+    clear_login_throttle,
+    get_login_lockout,
+    register_failed_login_attempt,
+)
 
 User = get_user_model()
 
@@ -31,9 +39,9 @@ class OwnerSetupForm(StyledFormMixin, UserCreationForm):
         self._apply_common_widget_attrs()
 
         self.fields["username"].label = "Username"
-        self.fields["username"].help_text = (
-            "This will be the owner account used to access the Mylonite administrative panel."
-        )
+        self.fields[
+            "username"
+        ].help_text = "This will be the owner account used to access the Mylonite administrative panel."
         self.fields["username"].widget.attrs.update(
             {
                 "autocomplete": "username",

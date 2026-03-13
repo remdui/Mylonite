@@ -10,7 +10,9 @@ class PortfolioContextProcessorTests(SimpleTestCase):
         request = RequestFactory().get("/")
         expected = {"portfolio_site": {"site_title": "Mylonite"}}
 
-        with patch("apps.web.context_processors.load_portfolio_context", return_value=expected):
+        with patch(
+            "apps.web.context_processors.load_portfolio_context", return_value=expected
+        ):
             context = portfolio_context(request)
 
         self.assertEqual(context, expected)

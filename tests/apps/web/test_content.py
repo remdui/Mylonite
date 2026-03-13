@@ -65,7 +65,9 @@ class ContentLoaderTests(TestCase):
                 'site_title = "My Site"\nowner_id = "identity.person.owner"\n',
                 encoding="utf-8",
             )
-            (root / "entities" / "identity.person.owner" / "entry.toml.example").write_text(
+            (
+                root / "entities" / "identity.person.owner" / "entry.toml.example"
+            ).write_text(
                 'id = "identity.person.owner"\nname = "Owner"\nfull_name = "Owner Name"\n',
                 encoding="utf-8",
             )

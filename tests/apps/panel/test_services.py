@@ -23,7 +23,9 @@ User = get_user_model()
 
 class PanelServiceStateTests(TestCase):
     def test_panel_is_initialized_and_user_is_owner(self):
-        owner = User.objects.create_user(username="owner", password="StrongPassword123!")
+        owner = User.objects.create_user(
+            username="owner", password="StrongPassword123!"
+        )
         setup = SiteSetup.get_solo()
         setup.owner = owner
         setup.save()
@@ -31,7 +33,9 @@ class PanelServiceStateTests(TestCase):
         self.assertTrue(panel_is_initialized())
         self.assertTrue(user_is_owner(owner))
 
-        outsider = User.objects.create_user(username="outsider", password="StrongPassword123!")
+        outsider = User.objects.create_user(
+            username="outsider", password="StrongPassword123!"
+        )
         self.assertFalse(user_is_owner(outsider))
 
 
