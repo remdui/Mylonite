@@ -71,25 +71,24 @@ This means the current alpha version should run out of the box without requiring
 
 ### Option 1: Run locally
 
-1. Copy the local launcher config:
-
-```bash
-cp .env.example .env
-```
-
-2. Start Mylonite in local mode:
+1. Start Mylonite in local mode:
 
 ```bash
 docker compose -f compose.yaml -f compose.local.yaml up --build
 ```
 
-3. Open:
+2. Open:
 
 ```text
 http://localhost:8000
 ```
 
 This mode binds the app only to localhost and is the recommended mode for local development.
+
+Optional overrides:
+
+- If you want to customize bind paths, port, or runtime UID/GID mapping, copy `.env.example` to `.env` and adjust values.
+- On Linux, leave `MYLONITE_PUID/MYLONITE_PGID` at `1000` unless your user/group IDs are different.
 
 #### Initialize editable local content
 
@@ -123,6 +122,8 @@ docker compose -f compose.yaml -f compose.reverse-proxy.yaml up -d --build
 ```
 
 In this mode, the Mylonite container is attached to the shared `proxy` network and is not exposed directly through a localhost port binding.
+
+For real deployments, place your production settings in `runtime/config/deploy.toml` (for example by copying `runtime/config/deploy.toml.example`). This file remains outside the image so deployment-specific security and domain settings stay versioned per instance.
 
 #### Example Caddy configuration
 
