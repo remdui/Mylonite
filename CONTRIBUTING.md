@@ -10,6 +10,16 @@ Thanks for your interest in contributing.
 - Add or update tests and documentation where relevant
 - Open a pull request with a clear explanation
 
+## Testing
+
+- Centralized test suite lives under `tests/` and mirrors source package structure (for example `tests/apps/panel/` for `apps/panel/`).
+- Run all tests with:
+
+```bash
+DJANGO_DEBUG=true python manage.py test
+```
+
+
 ## Guidelines
 
 - Keep changes focused and small where possible
