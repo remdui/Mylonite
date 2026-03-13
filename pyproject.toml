@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=69", "wheel"]
+requires = ["setuptools>=70", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -14,7 +14,7 @@ authors = [
   { name = "Remy Duijsens" }
 ]
 dependencies = [
-  "Django>=5.1,<6.0",
+  "Django>=5.2,<6.0",
   "gunicorn>=23.0,<24.0",
   "whitenoise>=6.8,<7.0",
 ]
@@ -29,4 +29,7 @@ include = ["mylonite*", "apps*"]
 [project.optional-dependencies]
 dev = [
   "coverage[toml]>=7.6,<8.0",
+  "pytest-django>=4.9",
+  "ruff>=0.9",
+  "django-debug-toolbar>=5.0",
 ]
