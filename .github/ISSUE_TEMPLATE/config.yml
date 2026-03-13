@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Support
+    url: https://github.com/remdui/mylonite/blob/main/SUPPORT.md
+    about: Please use SUPPORT.md guidance for usage and setup questions.
+  - name: Security policy
+    url: https://github.com/remdui/mylonite/blob/main/SECURITY.md
+    about: Report security vulnerabilities privately per SECURITY.md.

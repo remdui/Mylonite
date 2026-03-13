@@ -1,0 +1,22 @@
+# Default owner
+* @remdui
+
+# App code
+/apps/ @remdui
+/mylonite/ @remdui
+/templates/ @remdui
+/content/ @remdui
+/static/ @remdui
+/tests/ @remdui
+
+# Infrastructure and automation
+/infra/ @remdui
+/.github/ @remdui
+/compose*.yaml @remdui
+
+# Documentation and policy
+/README.md @remdui
+/CONTRIBUTING.md @remdui
+/SECURITY.md @remdui
+/CODE_OF_CONDUCT.md @remdui
+/SUPPORT.md @remdui
