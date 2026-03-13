@@ -20,6 +20,7 @@ services:
         source: ${MYLONITE_CONTENT_DIR:-./content}
         target: /content
         read_only: true
+    user: "${MYLONITE_PUID:-1000}:${MYLONITE_PGID:-1000}"
     restart: unless-stopped
     init: true
     read_only: true
