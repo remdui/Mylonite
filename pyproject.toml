@@ -28,7 +28,7 @@ classifiers = [
   "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
 ]
 dependencies = [
-  "Django>=5.2,<6.0",
+  "Django>=5.2,<7.0",
   "gunicorn>=23.0,<26.0",
   "whitenoise>=6.8,<7.0",
 ]
