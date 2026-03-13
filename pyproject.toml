@@ -13,6 +13,20 @@ license-files = ["LICENSE"]
 authors = [
   { name = "Remy Duijsens" }
 ]
+keywords = ["django", "portfolio", "self-hosted", "cv", "career-record"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Web Environment",
+  "Framework :: Django",
+  "Framework :: Django :: 5.2",
+  "Intended Audience :: End Users/Desktop",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+]
 dependencies = [
   "Django>=5.2,<6.0",
   "gunicorn>=23.0,<24.0",
@@ -22,6 +36,7 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/remdui/mylonite"
 Repository = "https://github.com/remdui/mylonite"
+Issues = "https://github.com/remdui/mylonite/issues"
 
 [tool.setuptools.packages.find]
 include = ["mylonite*", "apps*"]

@@ -15,6 +15,32 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  quality:
+    name: Quality (ruff)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install project + dev dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+          pip check
+
+      - name: Lint and format check
+        run: |
+          ruff check .
+          ruff format --check .
+
   tests:
     name: Tests (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
