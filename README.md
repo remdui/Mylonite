@@ -1,5 +1,16 @@
 # Mylonite: Your record, refined.
 
+[![Status: Alpha](https://img.shields.io/badge/status-alpha-orange)](https://github.com/remdui/mylonite)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/downloads/)
+[![License: AGPL v3+](https://img.shields.io/badge/license-AGPLv3%2B-blue.svg)](LICENSE)
+[![CI](https://github.com/remdui/mylonite/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/remdui/mylonite/actions/workflows/ci.yml)
+[![Dependency Review](https://github.com/remdui/mylonite/actions/workflows/dependency-review.yml/badge.svg)](https://github.com/remdui/mylonite/actions/workflows/dependency-review.yml)
+[![Last commit](https://img.shields.io/github/last-commit/remdui/mylonite?logo=github)](https://github.com/remdui/mylonite/commits/main)
+[![Open issues](https://img.shields.io/github/issues/remdui/mylonite)](https://github.com/remdui/mylonite/issues)
+[![Open pull requests](https://img.shields.io/github/issues-pr/remdui/mylonite)](https://github.com/remdui/mylonite/pulls)
+
+
+
 One source of truth that turns your records into a portfolio, homepage, tailored CVs, transcripts, and supporting documents.
 
 ---
