@@ -202,10 +202,11 @@ A simplified overview of the current structure:
 
 ```text
 Mylonite/
-  apps/                 Django apps
+  apps/                 Django apps (web, panel)
   content/              File-based personal records
   infra/docker/         Docker image and other infrastructure artifacts
-  mylonite/             Project settings and features
+  mylonite/             Project settings and shared core modules
+  mylonite/core/        Reusable domain and workflow primitives
   runtime/config/       Local runtime configs
   runtime/data/         Persistent runtime states
   scripts/              Helper scripts
