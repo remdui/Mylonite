@@ -1,3 +1,4 @@
+import logging
 from datetime import date
 from typing import Callable, Protocol, TypeVar
 
@@ -21,6 +22,7 @@ from mylonite.core.content_types import (
 )
 
 EntityModel = TypeVar("EntityModel")
+logger = logging.getLogger(__name__)
 
 
 class ContentRepository(Protocol):
@@ -64,7 +66,14 @@ class PortfolioContentLoader:
         self.repository = repository or FileSystemContentRepository()
         self.entity_registry = entity_registry or ContentEntityRegistry()
         if isinstance(self.repository, FileSystemContentRepository):
-            sync_content_examples(self.repository.content_root, self.entity_registry)
+            try:
+                sync_content_examples(self.repository.content_root, self.entity_registry)
+            except OSError:
+                logger.warning(
+                    "Unable to sync content examples at startup for %s",
+                    self.repository.content_root,
+                    exc_info=True,
+                )
         self._sources: list[SourceInfo] = []
         self._validation_errors: list[str] = []
 

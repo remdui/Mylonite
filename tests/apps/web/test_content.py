@@ -158,6 +158,12 @@ class ContentLoaderTests(TestCase):
             self.assertIn('site_url = "http://localhost:8000"', refreshed)
             self.assertIn('footer_show_generated_by = true', refreshed)
 
+    def test_loader_tolerates_unwritable_content_root(self):
+        with patch("apps.web.content_loader.sync_content_examples", side_effect=PermissionError):
+            loader = PortfolioContentLoader()
+
+        self.assertIsInstance(loader, PortfolioContentLoader)
+
     def test_portfolio_content_loader_tracks_sources_across_calls(self):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -169,8 +175,10 @@ class ContentLoaderTests(TestCase):
                 'site_title = "Loader Site"\nowner_id = "identity.person.owner"\n',
                 encoding="utf-8",
             )
+            owner_root = root / "entities" / "identity.person.owner"
+            owner_root.mkdir(parents=True, exist_ok=True)
             (
-                root / "entities" / "identity.person.owner" / "entry.toml.example"
+                owner_root / "entry.toml.example"
             ).write_text(
                 'id = "identity.person.owner"\nfull_name = "Loader Owner"\n',
                 encoding="utf-8",
