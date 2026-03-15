@@ -104,7 +104,7 @@ class FileSystemContentRepository:
         self,
         object_id: str,
         *,
-        text_filename: str | None = None,
+        text_filename: str | None = "website.md",
     ) -> tuple[dict, str, list[SourceInfo]]:
         root = self.content_root / "entities" / object_id
 

@@ -33,7 +33,7 @@ class ContentRepository(Protocol):
         self,
         object_id: str,
         *,
-        text_filename: str | None = None,
+        text_filename: str | None = "website.md",
     ) -> tuple[dict, str, list[SourceInfo]]: ...
 
     def list_entity_ids(self, *, prefix: str = "") -> list[str]: ...
@@ -65,17 +65,24 @@ class PortfolioContentLoader:
     ):
         self.repository = repository or FileSystemContentRepository()
         self.entity_registry = entity_registry or ContentEntityRegistry()
-        if isinstance(self.repository, FileSystemContentRepository):
-            try:
-                sync_content_examples(self.repository.content_root, self.entity_registry)
-            except OSError:
-                logger.warning(
-                    "Unable to sync content examples at startup for %s",
-                    self.repository.content_root,
-                    exc_info=True,
-                )
         self._sources: list[SourceInfo] = []
         self._validation_errors: list[str] = []
+
+    def sync_example_content(self) -> bool:
+        """Generate or refresh schema-based local `*.example` content files."""
+        if not isinstance(self.repository, FileSystemContentRepository):
+            return False
+
+        try:
+            sync_content_examples(self.repository.content_root, self.entity_registry)
+            return True
+        except OSError:
+            logger.warning(
+                "Unable to sync content examples for %s",
+                self.repository.content_root,
+                exc_info=True,
+            )
+            return False
 
     def begin_tracking(self) -> None:
         self._sources = []
@@ -100,7 +107,7 @@ class PortfolioContentLoader:
         object_id: str,
         mapper: Callable[[str, dict, str], EntityModel],
         *,
-        text_filename: str | None = None,
+        text_filename: str | None = "website.md",
         schema: SchemaDefinition | None = None,
     ) -> EntityModel:
         entry, body, sources = self.repository.load_entity_record(

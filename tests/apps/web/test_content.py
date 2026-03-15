@@ -125,7 +125,8 @@ class ContentLoaderTests(TestCase):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
             with patch("apps.web.content_repository.CONTENT_ROOT", root):
-                PortfolioContentLoader()
+                loader = PortfolioContentLoader()
+                loader.sync_example_content()
 
             site_example = root / "config" / "site.toml.example"
             person_entry_example = (
@@ -152,7 +153,8 @@ class ContentLoaderTests(TestCase):
             stale_file.write_text('site_title = "Old"\n', encoding="utf-8")
 
             with patch("apps.web.content_repository.CONTENT_ROOT", root):
-                PortfolioContentLoader()
+                loader = PortfolioContentLoader()
+                loader.sync_example_content()
 
             refreshed = stale_file.read_text(encoding="utf-8")
             self.assertIn('site_url = "http://localhost:8000"', refreshed)
@@ -161,8 +163,10 @@ class ContentLoaderTests(TestCase):
     def test_loader_tolerates_unwritable_content_root(self):
         with patch("apps.web.content_loader.sync_content_examples", side_effect=PermissionError):
             loader = PortfolioContentLoader()
+            synced = loader.sync_example_content()
 
         self.assertIsInstance(loader, PortfolioContentLoader)
+        self.assertFalse(synced)
 
     def test_portfolio_content_loader_tracks_sources_across_calls(self):
         with TemporaryDirectory() as tmp:
