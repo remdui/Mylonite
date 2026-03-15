@@ -11,7 +11,11 @@ from mylonite.core.content_conventions import (
     ENTITY_TYPE_HOMEPAGE_MAIN,
     ENTITY_TYPE_PERSON,
 )
-from mylonite.core.content_schema import SITE_CONFIG_SCHEMA, SchemaDefinition, validate_record
+from mylonite.core.content_schema import (
+    SITE_CONFIG_SCHEMA,
+    SchemaDefinition,
+    validate_record,
+)
 from mylonite.core.content_types import (
     ContentStatus,
     HomePageContent,
@@ -27,6 +31,7 @@ logger = logging.getLogger(__name__)
 
 class ContentRepository(Protocol):
     """Protocol for content source backends used by the loader."""
+
     def load_site_record(self) -> tuple[dict, list[SourceInfo]]: ...
 
     def load_entity_record(
@@ -125,7 +130,9 @@ class PortfolioContentLoader:
         payload = dict(entry)
 
         validated_entry = (
-            self._validate(object_id, payload, schema) if schema is not None else payload
+            self._validate(object_id, payload, schema)
+            if schema is not None
+            else payload
         )
         return mapper(object_id, validated_entry, body)
 

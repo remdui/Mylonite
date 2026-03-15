@@ -65,11 +65,7 @@ class ContentScaffoldTests(TestCase):
             sync_content_examples(root, registry_with_body)
 
             generated_text = (
-                root
-                / "entities"
-                / "content.example.page"
-                / "text"
-                / "main.md.example"
+                root / "entities" / "content.example.page" / "text" / "main.md.example"
             )
             self.assertTrue(generated_text.exists())
 
@@ -91,9 +87,7 @@ class ContentScaffoldTests(TestCase):
     def test_sync_rejects_invalid_object_id(self):
         invalid_schema = SchemaDefinition(
             schema_name="invalid",
-            fields=(
-                FieldRule("id", default="bad/id"),
-            ),
+            fields=(FieldRule("id", default="bad/id"),),
         )
 
         registry = ContentEntityRegistry(

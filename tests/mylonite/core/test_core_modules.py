@@ -28,13 +28,11 @@ class CoreModulesTests(TestCase):
             {"has_errors": True, "errors": ["site: site_url: required"]},
         )
 
-
     def test_schema_defaults_exposes_site_defaults(self):
         defaults = schema_defaults(SITE_CONFIG_SCHEMA)
 
         self.assertEqual(defaults["owner_id"], "identity.person.owner")
         self.assertTrue(defaults["footer_show_generated_by"])
-
 
     def test_parse_boolean_accepts_string_values(self):
         self.assertTrue(parse_boolean("true"))

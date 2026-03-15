@@ -133,17 +133,15 @@ class ContentLoaderTests(TestCase):
                 root / "entities" / "identity.person.owner" / "entry.toml.example"
             )
             homepage_body_example = (
-                root
-                / "entities"
-                / "content.homepage.main"
-                / "text"
-                / "main.md.example"
+                root / "entities" / "content.homepage.main" / "text" / "main.md.example"
             )
 
             self.assertTrue(site_example.exists())
             self.assertTrue(person_entry_example.exists())
             self.assertTrue(homepage_body_example.exists())
-            self.assertIn('owner_id = "identity.person.owner"', site_example.read_text())
+            self.assertIn(
+                'owner_id = "identity.person.owner"', site_example.read_text()
+            )
 
     def test_loader_regenerates_outdated_examples(self):
         with TemporaryDirectory() as tmp:
@@ -158,10 +156,12 @@ class ContentLoaderTests(TestCase):
 
             refreshed = stale_file.read_text(encoding="utf-8")
             self.assertIn('site_url = "http://localhost:8000"', refreshed)
-            self.assertIn('footer_show_generated_by = true', refreshed)
+            self.assertIn("footer_show_generated_by = true", refreshed)
 
     def test_loader_tolerates_unwritable_content_root(self):
-        with patch("apps.web.content_loader.sync_content_examples", side_effect=PermissionError):
+        with patch(
+            "apps.web.content_loader.sync_content_examples", side_effect=PermissionError
+        ):
             loader = PortfolioContentLoader()
             synced = loader.sync_example_content()
 
@@ -181,9 +181,7 @@ class ContentLoaderTests(TestCase):
             )
             owner_root = root / "entities" / "identity.person.owner"
             owner_root.mkdir(parents=True, exist_ok=True)
-            (
-                owner_root / "entry.toml.example"
-            ).write_text(
+            (owner_root / "entry.toml.example").write_text(
                 'id = "identity.person.owner"\nfull_name = "Loader Owner"\n',
                 encoding="utf-8",
             )

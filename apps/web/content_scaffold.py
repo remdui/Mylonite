@@ -71,14 +71,17 @@ def _render_toml(data: dict[str, Any]) -> str:
     """Render deterministic TOML for scaffold defaults (supports nested tables)."""
     scalar_fields, sections = _walk_toml_sections(data)
 
-    lines: list[str] = [f"{key} = {_format_toml_value(value)}" for key, value in scalar_fields]
+    lines: list[str] = [
+        f"{key} = {_format_toml_value(value)}" for key, value in scalar_fields
+    ]
 
     for section in sections:
         if lines:
             lines.append("")
         lines.append("[" + ".".join(section.key_path) + "]")
         lines.extend(
-            f"{key} = {_format_toml_value(value)}" for key, value in section.values.items()
+            f"{key} = {_format_toml_value(value)}"
+            for key, value in section.values.items()
         )
 
     return "\n".join(lines).rstrip() + "\n"
@@ -105,7 +108,9 @@ def _is_valid_entity_id(object_id: str) -> bool:
     return all(part.strip() for part in parts)
 
 
-def _build_entity_scaffold(definition: EntityDefinition) -> list[ScaffoldEntityDefinition]:
+def _build_entity_scaffold(
+    definition: EntityDefinition,
+) -> list[ScaffoldEntityDefinition]:
     """Expand one entity definition into one or more scaffold targets."""
     schema = definition.schema
     if schema is None or not definition.example_object_ids:
@@ -133,14 +138,18 @@ def _build_entity_scaffold(definition: EntityDefinition) -> list[ScaffoldEntityD
     return scaffolds
 
 
-def _prune_stale_text_examples(entity_root: Path, expected_text_filename: str | None) -> None:
+def _prune_stale_text_examples(
+    entity_root: Path, expected_text_filename: str | None
+) -> None:
     """Remove stale generated text examples when body strategy or filename changes."""
     text_root = entity_root / "text"
     if not text_root.exists():
         return
 
     expected_name = (
-        f"{expected_text_filename}.example" if expected_text_filename is not None else None
+        f"{expected_text_filename}.example"
+        if expected_text_filename is not None
+        else None
     )
 
     for example_file in text_root.glob("*.example"):
@@ -157,7 +166,9 @@ def sync_content_examples(content_root: Path, registry: ContentEntityRegistry) -
     for definition in registry.definitions():
         for scaffold in _build_entity_scaffold(definition):
             entity_root = content_root / "entities" / scaffold.object_id
-            _write_if_changed(entity_root / "entry.toml.example", _render_toml(scaffold.entry))
+            _write_if_changed(
+                entity_root / "entry.toml.example", _render_toml(scaffold.entry)
+            )
 
             _prune_stale_text_examples(entity_root, scaffold.text_filename)
             if scaffold.text_filename and scaffold.text_content is not None:

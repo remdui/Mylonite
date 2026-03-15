@@ -12,6 +12,7 @@ _MISSING = object()
 @dataclass(frozen=True)
 class FieldRule:
     """Validation/parsing/default rule for a single field."""
+
     name: str
     required: bool = False
     parser: Callable[[Any], Any] | None = None
@@ -21,6 +22,7 @@ class FieldRule:
 @dataclass(frozen=True)
 class SchemaDefinition:
     """Schema name and ordered field rules for one content record type."""
+
     schema_name: str
     fields: tuple[FieldRule, ...]
 
@@ -79,7 +81,9 @@ PERSON_PROFILE_SCHEMA = SchemaDefinition(
         FieldRule("name", required=False, parser=str, default="Your Name"),
         FieldRule("full_name", required=True, parser=str, default="Your Full Name"),
         FieldRule("display_name", required=False, parser=str, default="Your Name"),
-        FieldRule("headline", required=False, parser=str, default="Professional headline"),
+        FieldRule(
+            "headline", required=False, parser=str, default="Professional headline"
+        ),
         FieldRule(
             "summary",
             required=False,
