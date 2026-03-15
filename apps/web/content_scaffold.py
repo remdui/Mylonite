@@ -18,6 +18,12 @@ class ScaffoldEntityDefinition:
     text_content: str | None
 
 
+@dataclass(frozen=True)
+class _TomlSection:
+    key_path: tuple[str, ...]
+    values: dict[str, Any]
+
+
 def _format_toml_value(value: Any) -> str:
     if isinstance(value, bool):
         return "true" if value else "false"
@@ -32,26 +38,48 @@ def _format_toml_value(value: Any) -> str:
     raise TypeError(f"Unsupported TOML value type: {type(value)!r}")
 
 
-def _render_toml(data: dict[str, Any]) -> str:
-    """Render a small subset of TOML needed by current schema defaults."""
-    scalar_lines: list[str] = []
-    nested_lines: list[str] = []
+def _walk_toml_sections(
+    payload: dict[str, Any],
+    *,
+    key_path: tuple[str, ...] = (),
+) -> tuple[list[tuple[str, Any]], list[_TomlSection]]:
+    """Split payload into scalar fields and nested table sections recursively."""
+    scalars: list[tuple[str, Any]] = []
+    sections: list[_TomlSection] = []
 
-    for key, value in data.items():
+    for key, value in payload.items():
         if isinstance(value, dict):
-            nested_lines.append(f"[{key}]")
-            for nested_key, nested_value in value.items():
-                nested_lines.append(
-                    f"{nested_key} = {_format_toml_value(nested_value)}"
+            section_scalars, nested_sections = _walk_toml_sections(
+                value,
+                key_path=(*key_path, key),
+            )
+            sections.append(
+                _TomlSection(
+                    key_path=(*key_path, key),
+                    values={name: item for name, item in section_scalars},
                 )
-            nested_lines.append("")
+            )
+            sections.extend(nested_sections)
             continue
 
-        scalar_lines.append(f"{key} = {_format_toml_value(value)}")
+        scalars.append((key, value))
 
-    lines = scalar_lines
-    if nested_lines:
-        lines += [""] + nested_lines
+    return scalars, sections
+
+
+def _render_toml(data: dict[str, Any]) -> str:
+    """Render deterministic TOML for scaffold defaults (supports nested tables)."""
+    scalar_fields, sections = _walk_toml_sections(data)
+
+    lines: list[str] = [f"{key} = {_format_toml_value(value)}" for key, value in scalar_fields]
+
+    for section in sections:
+        if lines:
+            lines.append("")
+        lines.append("[" + ".".join(section.key_path) + "]")
+        lines.extend(
+            f"{key} = {_format_toml_value(value)}" for key, value in section.values.items()
+        )
 
     return "\n".join(lines).rstrip() + "\n"
 
@@ -61,7 +89,20 @@ def _write_if_changed(path: Path, content: str) -> None:
     current = path.read_text(encoding="utf-8") if path.exists() else None
     if current == content:
         return
-    path.write_text(content, encoding="utf-8")
+
+    tmp_path = path.with_name(f".{path.name}.tmp")
+    tmp_path.write_text(content, encoding="utf-8")
+    tmp_path.replace(path)
+
+
+def _is_valid_entity_id(object_id: str) -> bool:
+    """Allow dotted IDs only; block path traversal or empty segments."""
+    if not object_id:
+        return False
+    if "/" in object_id or "\\" in object_id:
+        return False
+    parts = object_id.split(".")
+    return all(part.strip() for part in parts)
 
 
 def _build_entity_scaffold(definition: EntityDefinition) -> list[ScaffoldEntityDefinition]:
@@ -76,15 +117,36 @@ def _build_entity_scaffold(definition: EntityDefinition) -> list[ScaffoldEntityD
 
     entry_defaults, text_content = definition.body_source.split_scaffold(base_entry)
 
-    return [
-        ScaffoldEntityDefinition(
-            object_id=object_id,
-            entry={**entry_defaults, "id": object_id},
-            text_filename=definition.body_source.text_filename,
-            text_content=text_content,
+    scaffolds: list[ScaffoldEntityDefinition] = []
+    for object_id in definition.example_object_ids:
+        if not _is_valid_entity_id(object_id):
+            raise ValueError(f"invalid entity object_id: {object_id!r}")
+        scaffolds.append(
+            ScaffoldEntityDefinition(
+                object_id=object_id,
+                entry={**entry_defaults, "id": object_id},
+                text_filename=definition.body_source.text_filename,
+                text_content=text_content,
+            )
         )
-        for object_id in definition.example_object_ids
-    ]
+
+    return scaffolds
+
+
+def _prune_stale_text_examples(entity_root: Path, expected_text_filename: str | None) -> None:
+    """Remove stale generated text examples when body strategy or filename changes."""
+    text_root = entity_root / "text"
+    if not text_root.exists():
+        return
+
+    expected_name = (
+        f"{expected_text_filename}.example" if expected_text_filename is not None else None
+    )
+
+    for example_file in text_root.glob("*.example"):
+        if expected_name is not None and example_file.name == expected_name:
+            continue
+        example_file.unlink()
 
 
 def sync_content_examples(content_root: Path, registry: ContentEntityRegistry) -> None:
@@ -97,8 +159,17 @@ def sync_content_examples(content_root: Path, registry: ContentEntityRegistry) -
             entity_root = content_root / "entities" / scaffold.object_id
             _write_if_changed(entity_root / "entry.toml.example", _render_toml(scaffold.entry))
 
+            _prune_stale_text_examples(entity_root, scaffold.text_filename)
             if scaffold.text_filename and scaffold.text_content is not None:
                 _write_if_changed(
                     entity_root / "text" / f"{scaffold.text_filename}.example",
                     scaffold.text_content.strip() + "\n",
                 )
+
+
+__all__ = [
+    "ScaffoldEntityDefinition",
+    "sync_content_examples",
+    "_build_entity_scaffold",
+    "_render_toml",
+]
