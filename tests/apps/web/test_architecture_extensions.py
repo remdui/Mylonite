@@ -13,6 +13,22 @@ from mylonite.core.theme_loader import ThemeResolver
 
 
 class ArchitectureExtensionTests(SimpleTestCase):
+    @staticmethod
+    def _create_theme(root: Path, theme_id: str) -> None:
+        theme_root = root / theme_id
+        (theme_root / "static").mkdir(parents=True)
+        (theme_root / "theme.toml").write_text(
+            "\n".join(
+                [
+                    f'name = "{theme_id.title()}"',
+                    f'description = "{theme_id} theme"',
+                    'version = "1.0.0"',
+                ]
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
     def test_entity_registry_can_register_new_entity_type(self):
         registry = ContentEntityRegistry()
         registry.register(
@@ -73,13 +89,12 @@ class ArchitectureExtensionTests(SimpleTestCase):
     def test_theme_resolver_falls_back_to_default_theme(self):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
-            (root / "default" / "templates").mkdir(parents=True)
-            (root / "default" / "static").mkdir(parents=True)
+            self._create_theme(root, "default")
 
-            paths = ThemeResolver(root).resolve(ThemeSettings(name="custom"))
+            resolved = ThemeResolver(root).resolve(ThemeSettings(name="custom"))
 
-        self.assertEqual(paths.template_dir.name, "templates")
-        self.assertEqual(paths.static_dir.name, "static")
+        self.assertEqual(resolved.active_theme.theme_id, "default")
+        self.assertEqual(resolved.active_theme.static_dir.name, "static")
 
     def test_schema_validation_returns_normalized_payload_and_errors(self):
         normalized, errors = validate_record(

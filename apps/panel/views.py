@@ -1,6 +1,8 @@
 from django.contrib import messages
 from django.contrib.auth import login
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth import views as auth_views
+from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.db import IntegrityError, transaction
 from django.http import HttpRequest, HttpResponse
@@ -10,7 +12,20 @@ from django.utils import timezone
 from django.views import View
 from django.views.generic import FormView, TemplateView
 
-from .forms import OwnerSetupForm, PanelAuthenticationForm, PanelPasswordChangeForm
+from pathlib import Path
+
+from mylonite.core.site_config_store import (
+    load_site_config_payload,
+    write_site_config_payload,
+)
+from mylonite.core.theme_loader import ThemeResolver, load_active_theme_settings
+
+from .forms import (
+    OwnerSetupForm,
+    PanelAuthenticationForm,
+    PanelPasswordChangeForm,
+    ThemeSelectionForm,
+)
 from .models import SiteSetup
 from .services import (
     InitialSetupAlreadyComplete,
@@ -175,18 +190,145 @@ class PanelDashboardView(OwnerRequiredMixin, PanelContextMixin, TemplateView):
     )
 
 
-class PanelSettingsView(
-    OwnerRequiredMixin,
-    PanelContextMixin,
-    auth_views.PasswordChangeView,
-):
+class PanelSettingsView(OwnerRequiredMixin, PanelContextMixin, TemplateView):
     template_name = "panel/settings.html"
-    form_class = PanelPasswordChangeForm
-    success_url = reverse_lazy("panel:settings")
     panel_section = "settings"
     panel_heading = "Settings"
-    panel_description = "Update your owner account credentials."
+    panel_description = "Update your owner account credentials and theme."
 
-    def form_valid(self, form):
-        messages.success(self.request, "Password updated successfully.")
-        return super().form_valid(form)
+    @property
+    def _content_root(self) -> Path:
+        return Path(settings.MYLONITE_CONTENT_ROOT)
+
+    @property
+    def _themes_root(self) -> Path:
+        return Path(settings.MYLONITE_THEMES_ROOT)
+
+    def _load_theme_context(self):
+        resolver = ThemeResolver(self._themes_root)
+        site_theme_settings = load_active_theme_settings(
+            content_root=self._content_root
+        )
+        discovered_themes = resolver.discover_themes()
+        resolved_theme = resolver.resolve(
+            site_theme_settings,
+            themes=discovered_themes,
+        )
+        selectable_themes = resolver.selectable_themes(
+            custom_theme_allowed=site_theme_settings.custom_theme_allowed,
+            themes=discovered_themes,
+        )
+
+        return {
+            "site_theme_settings": site_theme_settings,
+            "resolved_theme": resolved_theme,
+            "selectable_themes": selectable_themes,
+            "theme_choices": [
+                (
+                    theme.theme_id,
+                    f"{theme.metadata.name} ({theme.theme_id})",
+                )
+                for theme in selectable_themes
+            ],
+        }
+
+    def _get_password_form(self, data=None):
+        return PanelPasswordChangeForm(self.request.user, data=data)
+
+    def _get_theme_form(self, *, theme_choices, data=None, initial_theme_id="default"):
+        return ThemeSelectionForm(
+            data=data,
+            theme_choices=theme_choices,
+            initial={"theme_name": initial_theme_id},
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        theme_context = self._load_theme_context()
+
+        password_form = kwargs.get("password_form") or self._get_password_form()
+        theme_form = kwargs.get("theme_form") or self._get_theme_form(
+            theme_choices=theme_context["theme_choices"],
+            initial_theme_id=theme_context["resolved_theme"].active_theme.theme_id,
+        )
+
+        context["password_form"] = password_form
+        context["theme_form"] = theme_form
+        context["theme_options"] = theme_context["selectable_themes"]
+        context["active_theme_id"] = theme_context[
+            "resolved_theme"
+        ].active_theme.theme_id
+        context["custom_theme_allowed"] = theme_context[
+            "site_theme_settings"
+        ].custom_theme_allowed
+        context["missing_theme_files"] = theme_context[
+            "resolved_theme"
+        ].missing_required_static_files
+        return context
+
+    def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        action = request.POST.get("settings_action", "").strip().lower()
+        if action == "password":
+            return self._handle_password_update()
+        if action == "theme":
+            return self._handle_theme_update()
+        return redirect("panel:settings")
+
+    def _handle_password_update(self) -> HttpResponse:
+        password_form = self._get_password_form(data=self.request.POST)
+        theme_context = self._load_theme_context()
+        theme_form = self._get_theme_form(
+            theme_choices=theme_context["theme_choices"],
+            initial_theme_id=theme_context["resolved_theme"].active_theme.theme_id,
+        )
+
+        if password_form.is_valid():
+            user = password_form.save()
+            update_session_auth_hash(self.request, user)
+            messages.success(self.request, "Password updated successfully.")
+            return redirect("panel:settings")
+
+        context = self.get_context_data(
+            password_form=password_form,
+            theme_form=theme_form,
+        )
+        return self.render_to_response(context)
+
+    def _handle_theme_update(self) -> HttpResponse:
+        theme_context = self._load_theme_context()
+        password_form = self._get_password_form()
+        theme_form = self._get_theme_form(
+            data=self.request.POST,
+            theme_choices=theme_context["theme_choices"],
+            initial_theme_id=theme_context["resolved_theme"].active_theme.theme_id,
+        )
+
+        if theme_form.is_valid():
+            selected_theme_id = theme_form.cleaned_data["theme_name"]
+            payload = load_site_config_payload(self._content_root)
+            theme_payload = payload.setdefault("theme", {})
+            theme_payload["name"] = selected_theme_id
+            write_site_config_payload(self._content_root, payload)
+
+            selected_theme = next(
+                (
+                    theme
+                    for theme in theme_context["selectable_themes"]
+                    if theme.theme_id == selected_theme_id
+                ),
+                None,
+            )
+            display_name = (
+                selected_theme.metadata.name if selected_theme else selected_theme_id
+            )
+            messages.success(
+                self.request,
+                f"Theme updated to {display_name}.",
+            )
+            return redirect("panel:settings")
+
+        context = self.get_context_data(
+            password_form=password_form,
+            theme_form=theme_form,
+        )
+        return self.render_to_response(context)

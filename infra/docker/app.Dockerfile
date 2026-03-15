@@ -16,7 +16,6 @@ COPY manage.py /app/
 COPY mylonite /app/mylonite
 COPY apps /app/apps
 COPY templates /app/templates
-COPY static /app/static
 COPY infra/docker/entrypoint.sh /usr/local/bin/mylonite-entrypoint
 
 RUN find /app -type d -exec chmod 0755 {} \; \
@@ -24,8 +23,8 @@ RUN find /app -type d -exec chmod 0755 {} \; \
     && chmod 0755 /usr/local/bin/mylonite-entrypoint \
     && python -m pip install --upgrade pip \
     && python -m pip install . \
-    && mkdir -p /config /data /content \
-    && chmod 0755 /config /data /content
+    && mkdir -p /config /data /content /themes \
+    && chmod 0755 /config /data /content /themes
 
 EXPOSE 8000
 

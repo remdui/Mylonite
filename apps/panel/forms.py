@@ -165,3 +165,20 @@ class PanelPasswordChangeForm(StyledFormMixin, PasswordChangeForm):
                 "placeholder": "Repeat new password",
             }
         )
+
+
+class ThemeSelectionForm(StyledFormMixin, forms.Form):
+    theme_name = forms.ChoiceField(
+        label="Theme",
+        choices=(),
+    )
+
+    def __init__(
+        self,
+        *args,
+        theme_choices: list[tuple[str, str]] | None = None,
+        **kwargs,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        self.fields["theme_name"].choices = theme_choices or []
+        self._apply_common_widget_attrs()

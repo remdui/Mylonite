@@ -1,8 +1,15 @@
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from apps.panel.models import SiteSetup
+from mylonite.core.site_config_store import (
+    load_site_config_payload,
+    write_site_config_payload,
+)
 
 
 User = get_user_model()
@@ -19,6 +26,26 @@ User = get_user_model()
 class PanelViewTests(TestCase):
     def setUp(self):
         self.owner_password = "StrongPassword123!"
+
+    @staticmethod
+    def _create_theme(theme_root: Path, theme_id: str) -> None:
+        root = theme_root / theme_id
+        (root / "static" / "css").mkdir(parents=True, exist_ok=True)
+        (root / "theme.toml").write_text(
+            "\n".join(
+                [
+                    f'name = "{theme_id.title()}"',
+                    f'description = "{theme_id} theme"',
+                    'version = "1.0.0"',
+                ]
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        (root / "static" / "css" / "site.css").write_text(
+            "body { color: #fff; }\n",
+            encoding="utf-8",
+        )
 
     def create_owner_and_initialize(self, username="owner"):
         owner = User.objects.create_user(
@@ -153,3 +180,128 @@ class PanelViewTests(TestCase):
                 {"username": "owner", "password": "wrong-password"},
             )
             self.assertContains(third, "Too many sign-in attempts")
+
+    def test_settings_page_lists_selectable_themes(self):
+        owner = self.create_owner_and_initialize()
+        self.client.force_login(owner)
+
+        with TemporaryDirectory() as themes_tmp, TemporaryDirectory() as content_tmp:
+            themes_root = Path(themes_tmp)
+            content_root = Path(content_tmp)
+            self._create_theme(themes_root, "default")
+            self._create_theme(themes_root, "ocean")
+            write_site_config_payload(
+                content_root,
+                {
+                    "site_title": "Site",
+                    "site_url": "http://localhost:8000",
+                    "owner_id": "identity.person.owner",
+                    "footer_show_generated_by": True,
+                    "footer_repository_url": "",
+                    "hosting_mode": "local",
+                    "public_domain": "",
+                    "theme": {"name": "default", "custom_theme_allowed": True},
+                    "install": {
+                        "setup_wizard_enabled": True,
+                        "deferred_setup_allowed": True,
+                    },
+                },
+            )
+
+            with self.settings(
+                MYLONITE_THEMES_ROOT=themes_root,
+                MYLONITE_CONTENT_ROOT=content_root,
+            ):
+                response = self.client.get(reverse("panel:settings"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'value="ocean"')
+        self.assertContains(response, "Apply theme")
+
+    def test_theme_settings_post_updates_site_config(self):
+        owner = self.create_owner_and_initialize()
+        self.client.force_login(owner)
+
+        with TemporaryDirectory() as themes_tmp, TemporaryDirectory() as content_tmp:
+            themes_root = Path(themes_tmp)
+            content_root = Path(content_tmp)
+            self._create_theme(themes_root, "default")
+            self._create_theme(themes_root, "ocean")
+            write_site_config_payload(
+                content_root,
+                {
+                    "site_title": "Site",
+                    "site_url": "http://localhost:8000",
+                    "owner_id": "identity.person.owner",
+                    "footer_show_generated_by": True,
+                    "footer_repository_url": "",
+                    "hosting_mode": "local",
+                    "public_domain": "",
+                    "theme": {"name": "default", "custom_theme_allowed": True},
+                    "install": {
+                        "setup_wizard_enabled": True,
+                        "deferred_setup_allowed": True,
+                    },
+                },
+            )
+
+            with self.settings(
+                MYLONITE_THEMES_ROOT=themes_root,
+                MYLONITE_CONTENT_ROOT=content_root,
+            ):
+                response = self.client.post(
+                    reverse("panel:settings"),
+                    {
+                        "settings_action": "theme",
+                        "theme_name": "ocean",
+                    },
+                )
+                payload = load_site_config_payload(content_root)
+
+        self.assertRedirects(
+            response, reverse("panel:settings"), fetch_redirect_response=False
+        )
+        self.assertEqual(payload["theme"]["name"], "ocean")
+
+    def test_theme_settings_rejects_invalid_theme_choice(self):
+        owner = self.create_owner_and_initialize()
+        self.client.force_login(owner)
+
+        with TemporaryDirectory() as themes_tmp, TemporaryDirectory() as content_tmp:
+            themes_root = Path(themes_tmp)
+            content_root = Path(content_tmp)
+            self._create_theme(themes_root, "default")
+            write_site_config_payload(
+                content_root,
+                {
+                    "site_title": "Site",
+                    "site_url": "http://localhost:8000",
+                    "owner_id": "identity.person.owner",
+                    "footer_show_generated_by": True,
+                    "footer_repository_url": "",
+                    "hosting_mode": "local",
+                    "public_domain": "",
+                    "theme": {"name": "default", "custom_theme_allowed": True},
+                    "install": {
+                        "setup_wizard_enabled": True,
+                        "deferred_setup_allowed": True,
+                    },
+                },
+            )
+
+            with self.settings(
+                MYLONITE_THEMES_ROOT=themes_root,
+                MYLONITE_CONTENT_ROOT=content_root,
+            ):
+                response = self.client.post(
+                    reverse("panel:settings"),
+                    {
+                        "settings_action": "theme",
+                        "theme_name": "nonexistent",
+                    },
+                )
+                payload = load_site_config_payload(content_root)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Select a valid choice")
+        self.assertEqual(payload["theme"]["name"], "default")
