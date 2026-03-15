@@ -1,4 +1,12 @@
+from mylonite.core.content_conventions import DEFAULT_OWNER_ID
+from mylonite.core.content_schema import (
+    HOMEPAGE_CONTENT_SCHEMA,
+    PERSON_PROFILE_SCHEMA,
+    SITE_CONFIG_SCHEMA,
+    schema_defaults,
+)
 from mylonite.core.content_types import (
+    HomePageContent,
     HostingMode,
     PersonProfile,
     SiteConfig,
@@ -8,9 +16,11 @@ from mylonite.core.content_types import (
 
 
 def map_site_config(site_data: dict) -> SiteConfig:
-    theme_data = site_data.get("theme", {})
-    install_data = site_data.get("install", {})
-    hosting_mode_value = site_data.get("hosting_mode", HostingMode.LOCAL.value)
+    defaults = schema_defaults(SITE_CONFIG_SCHEMA)
+    merged_site_data = {**defaults, **site_data}
+    theme_data = merged_site_data.get("theme", {})
+    install_data = merged_site_data.get("install", {})
+    hosting_mode_value = merged_site_data.get("hosting_mode", HostingMode.LOCAL.value)
 
     try:
         hosting_mode = HostingMode(hosting_mode_value)
@@ -18,13 +28,13 @@ def map_site_config(site_data: dict) -> SiteConfig:
         hosting_mode = HostingMode.LOCAL
 
     return SiteConfig(
-        site_title=site_data.get("site_title", "Portfolio"),
-        site_url=site_data.get("site_url", "http://localhost:8000"),
-        owner_id=site_data.get("owner_id", "identity.person.owner"),
-        footer_show_generated_by=site_data.get("footer_show_generated_by", True),
-        footer_repository_url=site_data.get("footer_repository_url", ""),
+        site_title=merged_site_data.get("site_title", "Portfolio"),
+        site_url=merged_site_data.get("site_url", "http://localhost:8000"),
+        owner_id=merged_site_data.get("owner_id", DEFAULT_OWNER_ID),
+        footer_show_generated_by=merged_site_data.get("footer_show_generated_by", True),
+        footer_repository_url=merged_site_data.get("footer_repository_url", ""),
         hosting_mode=hosting_mode,
-        public_domain=site_data.get("public_domain", ""),
+        public_domain=merged_site_data.get("public_domain", ""),
         theme=ThemeSettings(
             name=theme_data.get("name", "default"),
             custom_theme_allowed=theme_data.get("custom_theme_allowed", True),
@@ -36,14 +46,27 @@ def map_site_config(site_data: dict) -> SiteConfig:
     )
 
 
-def map_person_profile(object_id: str, entry: dict, bio: str) -> PersonProfile:
+def map_person_profile(object_id: str, entry: dict, _: str) -> PersonProfile:
+    defaults = schema_defaults(PERSON_PROFILE_SCHEMA)
+    merged_entry = {**defaults, **entry}
+
     return PersonProfile(
-        id=entry.get("id", object_id),
-        name=entry.get("name", ""),
-        full_name=entry.get("full_name", ""),
-        display_name=entry.get("display_name", ""),
-        headline=entry.get("headline", ""),
-        summary=entry.get("summary", ""),
-        bio=bio or entry.get("summary", ""),
-        profile_image_path=entry.get("profile_image_path", ""),
+        id=merged_entry.get("id", object_id),
+        name=merged_entry.get("name", ""),
+        full_name=merged_entry.get("full_name", ""),
+        display_name=merged_entry.get("display_name", ""),
+        headline=merged_entry.get("headline", ""),
+        summary=merged_entry.get("summary", ""),
+        bio=merged_entry.get("summary", ""),
+        profile_image_path=merged_entry.get("profile_image_path", ""),
+    )
+
+
+def map_homepage_content(object_id: str, entry: dict, markdown: str) -> HomePageContent:
+    defaults = schema_defaults(HOMEPAGE_CONTENT_SCHEMA)
+    merged_entry = {**defaults, **entry}
+    return HomePageContent(
+        id=merged_entry.get("id", object_id),
+        title=merged_entry.get("title", "Homepage Main Content"),
+        markdown=markdown or merged_entry.get("markdown", ""),
     )

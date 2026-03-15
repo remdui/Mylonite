@@ -58,6 +58,13 @@ class PersonProfile:
 
 
 @dataclass(frozen=True)
+class HomePageContent:
+    id: str
+    title: str
+    markdown: str
+
+
+@dataclass(frozen=True)
 class ValidationStatus:
     has_errors: bool
     errors: list[str]

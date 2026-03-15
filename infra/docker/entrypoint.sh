@@ -60,6 +60,24 @@ elif updated:
     print(f"Updated {env_file} with a generated Django secret key.")
 PY
 
+python - <<'PY'
+import os
+from pathlib import Path
+
+from apps.web.content_registry import ContentEntityRegistry
+from apps.web.content_scaffold import sync_content_examples
+
+content_root = Path(os.environ["MYLONITE_CONTENT_ROOT"])
+
+try:
+    sync_content_examples(content_root, ContentEntityRegistry())
+except OSError as exc:
+    print(
+        f"WARNING: unable to generate content examples in {content_root}: {exc}",
+        flush=True,
+    )
+PY
+
 python manage.py migrate --noinput
 python manage.py collectstatic --noinput
 

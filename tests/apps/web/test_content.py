@@ -76,7 +76,7 @@ class ContentLoaderTests(TestCase):
                 return {}, []
 
             def load_entity_record(
-                self, object_id: str, *, text_filename: str = "website.md"
+                self, object_id: str, *, text_filename: str | None = None
             ):
                 return {"id": object_id, "name": "Custom"}, "Body", []
 
@@ -104,7 +104,7 @@ class ContentLoaderTests(TestCase):
                 return {"site_title": "Site"}, []
 
             def load_entity_record(
-                self, object_id: str, *, text_filename: str = "website.md"
+                self, object_id: str, *, text_filename: str | None = None
             ):
                 return {"id": object_id}, "Body", []
 
@@ -121,25 +121,78 @@ class ContentLoaderTests(TestCase):
         self.assertTrue(status.has_errors)
         self.assertTrue(any("full_name: required" in error for error in status.errors))
 
+    def test_loader_generates_examples_from_schema(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            with patch("apps.web.content_repository.CONTENT_ROOT", root):
+                loader = PortfolioContentLoader()
+                loader.sync_example_content()
+
+            site_example = root / "config" / "site.toml.example"
+            person_entry_example = (
+                root / "entities" / "identity.person.owner" / "entry.toml.example"
+            )
+            homepage_body_example = (
+                root / "entities" / "content.homepage.main" / "text" / "main.md.example"
+            )
+
+            self.assertTrue(site_example.exists())
+            self.assertTrue(person_entry_example.exists())
+            self.assertTrue(homepage_body_example.exists())
+            self.assertIn(
+                'owner_id = "identity.person.owner"', site_example.read_text()
+            )
+
+    def test_loader_regenerates_outdated_examples(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            stale_file = root / "config" / "site.toml.example"
+            stale_file.parent.mkdir(parents=True, exist_ok=True)
+            stale_file.write_text('site_title = "Old"\n', encoding="utf-8")
+
+            with patch("apps.web.content_repository.CONTENT_ROOT", root):
+                loader = PortfolioContentLoader()
+                loader.sync_example_content()
+
+            refreshed = stale_file.read_text(encoding="utf-8")
+            self.assertIn('site_url = "http://localhost:8000"', refreshed)
+            self.assertIn("footer_show_generated_by = true", refreshed)
+
+    def test_loader_tolerates_unwritable_content_root(self):
+        with patch(
+            "apps.web.content_loader.sync_content_examples", side_effect=PermissionError
+        ):
+            loader = PortfolioContentLoader()
+            synced = loader.sync_example_content()
+
+        self.assertIsInstance(loader, PortfolioContentLoader)
+        self.assertFalse(synced)
+
     def test_portfolio_content_loader_tracks_sources_across_calls(self):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
             (root / "config").mkdir(parents=True, exist_ok=True)
-            owner_text = root / "entities" / "identity.person.owner" / "text"
-            owner_text.mkdir(parents=True, exist_ok=True)
+            homepage_text = root / "entities" / "content.homepage.main" / "text"
+            homepage_text.mkdir(parents=True, exist_ok=True)
 
             (root / "config" / "site.toml.example").write_text(
                 'site_title = "Loader Site"\nowner_id = "identity.person.owner"\n',
                 encoding="utf-8",
             )
-            (
-                root / "entities" / "identity.person.owner" / "entry.toml.example"
-            ).write_text(
+            owner_root = root / "entities" / "identity.person.owner"
+            owner_root.mkdir(parents=True, exist_ok=True)
+            (owner_root / "entry.toml.example").write_text(
                 'id = "identity.person.owner"\nfull_name = "Loader Owner"\n',
                 encoding="utf-8",
             )
-            (owner_text / "website.md.example").write_text(
-                "Loader owner bio.",
+            (
+                root / "entities" / "content.homepage.main" / "entry.toml.example"
+            ).write_text(
+                'id = "content.homepage.main"\ntitle = "Homepage Main Content"\n',
+                encoding="utf-8",
+            )
+            (homepage_text / "main.md.example").write_text(
+                "Loader homepage markdown.",
                 encoding="utf-8",
             )
 
@@ -147,6 +200,7 @@ class ContentLoaderTests(TestCase):
                 loader = PortfolioContentLoader()
                 site = loader.load_site()
                 owner = loader.load_person(site.owner_id)
+                loader.load_homepage_main()
                 status = loader.build_content_status()
 
             self.assertEqual(site.site_title, "Loader Site")

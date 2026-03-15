@@ -104,7 +104,7 @@ class FileSystemContentRepository:
         self,
         object_id: str,
         *,
-        text_filename: str = "website.md",
+        text_filename: str | None = None,
     ) -> tuple[dict, str, list[SourceInfo]]:
         root = self.content_root / "entities" / object_id
 
@@ -112,6 +112,9 @@ class FileSystemContentRepository:
             root / "entry.toml",
             content_root=self.content_root,
         )
+        if text_filename is None:
+            return entry, "", [entry_source]
+
         body, body_source = load_text_file(
             root / "text" / text_filename,
             content_root=self.content_root,
