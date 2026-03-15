@@ -14,7 +14,9 @@ class UrlRoutingTests(SimpleTestCase):
 
     def test_theme_static_routes_to_theme_static_view(self):
         self.assertEqual(
-            resolve(reverse("theme_static", kwargs={"asset_path": "css/site.css"})).func,
+            resolve(
+                reverse("theme_static", kwargs={"asset_path": "css/site.css"})
+            ).func,
             web_views.theme_static,
         )
 

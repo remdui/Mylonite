@@ -71,4 +71,3 @@ def render_toml(data: dict[str, Any]) -> str:
         )
 
     return "\n".join(lines).rstrip() + "\n"
-

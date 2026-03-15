@@ -374,7 +374,9 @@ class ThemeResolver:
             metadata_mtime_ns = (
                 int(metadata_path.stat().st_mtime_ns) if metadata_path.exists() else -1
             )
-            static_mtime_ns = int(static_dir.stat().st_mtime_ns) if static_dir.exists() else -1
+            static_mtime_ns = (
+                int(static_dir.stat().st_mtime_ns) if static_dir.exists() else -1
+            )
             entries.append((child.name, metadata_mtime_ns, static_mtime_ns))
 
         return tuple(entries)

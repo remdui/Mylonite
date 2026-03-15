@@ -96,10 +96,7 @@ class ThemeStaticView(View):
         if resolved_asset is None:
             raise Http404("Theme asset not found.")
 
-        if (
-            normalized_path.endswith(".css")
-            and not resolved_asset.from_fallback
-        ):
+        if normalized_path.endswith(".css") and not resolved_asset.from_fallback:
             css_response = self._build_css_response(
                 resolved_theme=resolved_theme,
                 normalized_path=normalized_path,

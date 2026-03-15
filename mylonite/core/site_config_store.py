@@ -46,4 +46,3 @@ def write_site_config_payload(content_root: Path, payload: dict[str, Any]) -> No
     path = site_config_path(content_root)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(render_toml(payload), encoding="utf-8")
-

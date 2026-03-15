@@ -18,7 +18,7 @@ class ArchitectureExtensionTests(SimpleTestCase):
         theme_root = root / theme_id
         (theme_root / "static").mkdir(parents=True)
         (theme_root / "theme.toml").write_text(
-            '\n'.join(
+            "\n".join(
                 [
                     f'name = "{theme_id.title()}"',
                     f'description = "{theme_id} theme"',

@@ -206,7 +206,9 @@ class PanelSettingsView(OwnerRequiredMixin, PanelContextMixin, TemplateView):
 
     def _load_theme_context(self):
         resolver = ThemeResolver(self._themes_root)
-        site_theme_settings = load_active_theme_settings(content_root=self._content_root)
+        site_theme_settings = load_active_theme_settings(
+            content_root=self._content_root
+        )
         discovered_themes = resolver.discover_themes()
         resolved_theme = resolver.resolve(
             site_theme_settings,
@@ -253,13 +255,15 @@ class PanelSettingsView(OwnerRequiredMixin, PanelContextMixin, TemplateView):
         context["password_form"] = password_form
         context["theme_form"] = theme_form
         context["theme_options"] = theme_context["selectable_themes"]
-        context["active_theme_id"] = theme_context["resolved_theme"].active_theme.theme_id
-        context["custom_theme_allowed"] = (
-            theme_context["site_theme_settings"].custom_theme_allowed
-        )
-        context["missing_theme_files"] = (
-            theme_context["resolved_theme"].missing_required_static_files
-        )
+        context["active_theme_id"] = theme_context[
+            "resolved_theme"
+        ].active_theme.theme_id
+        context["custom_theme_allowed"] = theme_context[
+            "site_theme_settings"
+        ].custom_theme_allowed
+        context["missing_theme_files"] = theme_context[
+            "resolved_theme"
+        ].missing_required_static_files
         return context
 
     def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:

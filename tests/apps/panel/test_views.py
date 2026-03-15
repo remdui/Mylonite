@@ -32,7 +32,7 @@ class PanelViewTests(TestCase):
         root = theme_root / theme_id
         (root / "static" / "css").mkdir(parents=True, exist_ok=True)
         (root / "theme.toml").write_text(
-            '\n'.join(
+            "\n".join(
                 [
                     f'name = "{theme_id.title()}"',
                     f'description = "{theme_id} theme"',
