@@ -3,16 +3,16 @@
 {% block content %}
 <section class="hero">
     <p class="eyebrow">Portfolio</p>
-    <h1>{{ owner_profile.display_name|default:owner_profile.full_name }}</h1>
+    <h1>{{ home_page.hero.display_name }}</h1>
 
-    {% if owner_profile.headline %}
-        <p class="headline">{{ owner_profile.headline }}</p>
+    {% if home_page.hero.headline %}
+        <p class="headline">{{ home_page.hero.headline }}</p>
     {% endif %}
 
-    {% if owner_profile.bio %}
-        <p class="tagline">{{ owner_profile.bio|linebreaksbr }}</p>
-    {% elif owner_profile.summary %}
-        <p class="tagline">{{ owner_profile.summary }}</p>
+    {% if home_page.hero.bio %}
+        <p class="tagline">{{ home_page.hero.bio|linebreaksbr }}</p>
+    {% elif home_page.hero.summary %}
+        <p class="tagline">{{ home_page.hero.summary }}</p>
     {% endif %}
 </section>
 {% endblock %}
