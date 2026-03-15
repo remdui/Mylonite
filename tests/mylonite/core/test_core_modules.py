@@ -4,7 +4,13 @@ from unittest import TestCase
 
 from mylonite.core.artifact_services import ArtifactBuildRequest
 from mylonite.core.build_workflow import BuildInput, build_cache_key
-from mylonite.core.content_schema import PERSON_PROFILE_SCHEMA, validate_record
+from mylonite.core.content_schema import (
+    PERSON_PROFILE_SCHEMA,
+    SITE_CONFIG_SCHEMA,
+    parse_boolean,
+    schema_defaults,
+    validate_record,
+)
 from mylonite.core.content_types import (
     ArtifactVisibility,
     ThemeSettings,
@@ -21,6 +27,26 @@ class CoreModulesTests(TestCase):
             status.to_dict(),
             {"has_errors": True, "errors": ["site: site_url: required"]},
         )
+
+
+    def test_schema_defaults_exposes_site_defaults(self):
+        defaults = schema_defaults(SITE_CONFIG_SCHEMA)
+
+        self.assertEqual(defaults["owner_id"], "identity.person.owner")
+        self.assertTrue(defaults["footer_show_generated_by"])
+
+
+    def test_parse_boolean_accepts_string_values(self):
+        self.assertTrue(parse_boolean("true"))
+        self.assertFalse(parse_boolean("false"))
+
+    def test_schema_defaults_returns_detached_nested_defaults(self):
+        defaults_a = schema_defaults(SITE_CONFIG_SCHEMA)
+        defaults_b = schema_defaults(SITE_CONFIG_SCHEMA)
+
+        defaults_a["theme"]["name"] = "custom"
+
+        self.assertEqual(defaults_b["theme"]["name"], "default")
 
     def test_validate_record_reports_missing_required_field(self):
         normalized, errors = validate_record(

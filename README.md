@@ -103,7 +103,7 @@ Optional overrides:
 
 #### Initialize editable local content
 
-The repository tracks `.example` content files as defaults and templates.
+Example content files are generated from the schema automatically at startup and are intentionally not tracked in git.
 
 If you want to create editable content files in `content/` without overwriting anything that already exists, run:
 

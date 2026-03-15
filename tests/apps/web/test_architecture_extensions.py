@@ -4,6 +4,7 @@ from tempfile import TemporaryDirectory
 from django.test import SimpleTestCase
 
 from mylonite.core.build_workflow import BuildInput, build_cache_key
+from apps.web.content_entities import FieldBodySourceSpec
 from apps.web.content_loader import PortfolioContentLoader
 from apps.web.content_registry import ContentEntityRegistry, EntityDefinition
 from mylonite.core.content_schema import PERSON_PROFILE_SCHEMA, validate_record
@@ -22,12 +23,15 @@ class ArchitectureExtensionTests(SimpleTestCase):
                     "title": entry.get("title", ""),
                     "description": body,
                 },
-                text_filename="description.md",
+                body_source=FieldBodySourceSpec(
+                    field_name="description",
+                    filename="description.md",
+                ),
             )
         )
 
         definition = registry.get("project")
-        self.assertEqual(definition.text_filename, "description.md")
+        self.assertEqual(definition.body_source.text_filename, "description.md")
 
     def test_loader_can_use_registered_entity_mapper(self):
         class StubRepository:
@@ -35,7 +39,7 @@ class ArchitectureExtensionTests(SimpleTestCase):
                 return {}, []
 
             def load_entity_record(
-                self, object_id: str, *, text_filename: str = "website.md"
+                self, object_id: str, *, text_filename: str | None = "website.md"
             ):
                 return {"title": "Project A"}, "Project body", []
 
@@ -51,7 +55,10 @@ class ArchitectureExtensionTests(SimpleTestCase):
                     "title": entry.get("title", ""),
                     "body": body,
                 },
-                text_filename="description.md",
+                body_source=FieldBodySourceSpec(
+                    field_name="description",
+                    filename="description.md",
+                ),
             )
         )
 
@@ -103,7 +110,7 @@ class ArchitectureExtensionTests(SimpleTestCase):
                 return {"site_title": "Site"}, []
 
             def load_entity_record(
-                self, object_id: str, *, text_filename: str = "website.md"
+                self, object_id: str, *, text_filename: str | None = "website.md"
             ):
                 return {}, "", []
 

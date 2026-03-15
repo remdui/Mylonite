@@ -1,6 +1,0 @@
-site_title = "Mylonite"
-site_url = "http://localhost:8000"
-owner_id = "identity.person.owner"
-
-footer_show_generated_by = true
-footer_repository_url = "https://github.com/remdui/mylonite"

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Protocol
 
 from .content_loader import PortfolioContentLoader
-from mylonite.core.content_types import PersonProfile, SiteConfig
+from mylonite.core.content_types import HomePageContent, PersonProfile, SiteConfig
 from .view_models import HomeHeroViewModel, HomePageViewModel, LayoutViewModel
 
 
@@ -10,6 +10,7 @@ from .view_models import HomeHeroViewModel, HomePageViewModel, LayoutViewModel
 class SharedPageContext:
     site: SiteConfig
     owner: PersonProfile
+    homepage: HomePageContent
     layout_context: dict
 
 
@@ -28,7 +29,7 @@ class HomePageContextBuilder:
         hero = HomeHeroViewModel(
             display_name=shared.owner.display_name or shared.owner.full_name,
             headline=shared.owner.headline,
-            bio=shared.owner.bio,
+            bio=shared.homepage.markdown,
             summary=shared.owner.summary,
         )
         page_model = HomePageViewModel(page_title="Home", hero=hero)
@@ -55,6 +56,7 @@ class WebPageContextFactory:
         self.loader.begin_tracking()
         site = self.loader.load_site()
         owner = self.loader.load_person(site.owner_id)
+        homepage = self.loader.load_homepage_main()
 
         layout = LayoutViewModel(
             site_title=site.site_title,
@@ -74,6 +76,7 @@ class WebPageContextFactory:
         return SharedPageContext(
             site=site,
             owner=owner,
+            homepage=homepage,
             layout_context=layout_context,
         )
 

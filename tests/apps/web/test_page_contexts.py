@@ -4,6 +4,7 @@ from django.test import SimpleTestCase
 
 from mylonite.core.content_types import (
     ContentStatus,
+    HomePageContent,
     PersonProfile,
     SiteConfig,
     ValidationStatus,
@@ -29,6 +30,11 @@ class PageContextBuilderTests(SimpleTestCase):
             headline="Engineer",
             summary="Summary",
             bio="Bio",
+        )
+        loader.load_homepage_main.return_value = HomePageContent(
+            id="content.homepage.main",
+            title="Homepage Main Content",
+            markdown="Homepage markdown",
         )
         loader.build_content_status.return_value = ContentStatus(
             using_example_files=False,
@@ -74,6 +80,11 @@ class PageRegistryTests(SimpleTestCase):
             headline="Engineer",
             summary="Summary",
             bio="Bio",
+        )
+        loader.load_homepage_main.return_value = HomePageContent(
+            id="content.homepage.main",
+            title="Homepage Main Content",
+            markdown="Homepage markdown",
         )
         loader.build_content_status.return_value = ContentStatus(
             using_example_files=False,
