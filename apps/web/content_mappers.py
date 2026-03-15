@@ -1,4 +1,10 @@
-from mylonite.core.content_types import HostingMode, PersonProfile, SiteConfig, SiteInstallSettings, ThemeSettings
+from mylonite.core.content_types import (
+    HostingMode,
+    PersonProfile,
+    SiteConfig,
+    SiteInstallSettings,
+    ThemeSettings,
+)
 
 
 def map_site_config(site_data: dict) -> SiteConfig:

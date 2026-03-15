@@ -16,7 +16,9 @@ class SharedPageContext:
 class PageContextBuilder(Protocol):
     page_name: str
 
-    def build(self, shared: SharedPageContext, loader: PortfolioContentLoader) -> dict: ...
+    def build(
+        self, shared: SharedPageContext, loader: PortfolioContentLoader
+    ) -> dict: ...
 
 
 class HomePageContextBuilder:
@@ -65,7 +67,9 @@ class WebPageContextFactory:
         )
 
         layout_context = layout.to_context()
-        layout_context["validation_status"] = self.loader.build_validation_status().to_dict()
+        layout_context["validation_status"] = (
+            self.loader.build_validation_status().to_dict()
+        )
 
         return SharedPageContext(
             site=site,

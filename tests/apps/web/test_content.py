@@ -70,13 +70,14 @@ class ContentLoaderTests(TestCase):
 
         self.assertEqual(loader.build_content_status().example_files, [])
 
-
     def test_load_entity_supports_custom_mapper(self):
         class StubRepository:
             def load_site_record(self):
                 return {}, []
 
-            def load_entity_record(self, object_id: str, *, text_filename: str = "website.md"):
+            def load_entity_record(
+                self, object_id: str, *, text_filename: str = "website.md"
+            ):
                 return {"id": object_id, "name": "Custom"}, "Body", []
 
             def list_entity_ids(self, *, prefix: str = ""):
@@ -97,13 +98,14 @@ class ContentLoaderTests(TestCase):
         self.assertEqual(result["name"], "Custom")
         self.assertEqual(result["body"], "Body")
 
-
     def test_loader_tracks_validation_errors_for_registered_entity(self):
         class StubRepository:
             def load_site_record(self):
                 return {"site_title": "Site"}, []
 
-            def load_entity_record(self, object_id: str, *, text_filename: str = "website.md"):
+            def load_entity_record(
+                self, object_id: str, *, text_filename: str = "website.md"
+            ):
                 return {"id": object_id}, "Body", []
 
             def list_entity_ids(self, *, prefix: str = ""):
@@ -130,7 +132,9 @@ class ContentLoaderTests(TestCase):
                 'site_title = "Loader Site"\nowner_id = "identity.person.owner"\n',
                 encoding="utf-8",
             )
-            (root / "entities" / "identity.person.owner" / "entry.toml.example").write_text(
+            (
+                root / "entities" / "identity.person.owner" / "entry.toml.example"
+            ).write_text(
                 'id = "identity.person.owner"\nfull_name = "Loader Owner"\n',
                 encoding="utf-8",
             )

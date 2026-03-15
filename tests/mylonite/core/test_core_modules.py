@@ -5,7 +5,11 @@ from unittest import TestCase
 from mylonite.core.artifact_services import ArtifactBuildRequest
 from mylonite.core.build_workflow import BuildInput, build_cache_key
 from mylonite.core.content_schema import PERSON_PROFILE_SCHEMA, validate_record
-from mylonite.core.content_types import ArtifactVisibility, ThemeSettings, ValidationStatus
+from mylonite.core.content_types import (
+    ArtifactVisibility,
+    ThemeSettings,
+    ValidationStatus,
+)
 from mylonite.core.theme_loader import ThemeResolver
 
 

@@ -34,7 +34,9 @@ class ArchitectureExtensionTests(SimpleTestCase):
             def load_site_record(self):
                 return {}, []
 
-            def load_entity_record(self, object_id: str, *, text_filename: str = "website.md"):
+            def load_entity_record(
+                self, object_id: str, *, text_filename: str = "website.md"
+            ):
                 return {"title": "Project A"}, "Project body", []
 
             def list_entity_ids(self, *, prefix: str = ""):
@@ -53,7 +55,9 @@ class ArchitectureExtensionTests(SimpleTestCase):
             )
         )
 
-        loader = PortfolioContentLoader(repository=StubRepository(), entity_registry=registry)
+        loader = PortfolioContentLoader(
+            repository=StubRepository(), entity_registry=registry
+        )
         project = loader.load_registered_entity("project", "project.a")
 
         self.assertEqual(project["id"], "project.a")
@@ -84,18 +88,23 @@ class ArchitectureExtensionTests(SimpleTestCase):
         self.assertEqual(normalized["full_name"], "Owner")
 
     def test_build_cache_key_changes_with_theme(self):
-        key_a = build_cache_key(BuildInput(site_id="site", content_version="1", theme_name="default"))
-        key_b = build_cache_key(BuildInput(site_id="site", content_version="1", theme_name="modern"))
+        key_a = build_cache_key(
+            BuildInput(site_id="site", content_version="1", theme_name="default")
+        )
+        key_b = build_cache_key(
+            BuildInput(site_id="site", content_version="1", theme_name="modern")
+        )
 
         self.assertNotEqual(key_a, key_b)
-
 
     def test_loader_validation_status_exposes_site_config_errors(self):
         class StubRepository:
             def load_site_record(self):
                 return {"site_title": "Site"}, []
 
-            def load_entity_record(self, object_id: str, *, text_filename: str = "website.md"):
+            def load_entity_record(
+                self, object_id: str, *, text_filename: str = "website.md"
+            ):
                 return {}, "", []
 
             def list_entity_ids(self, *, prefix: str = ""):
@@ -108,4 +117,6 @@ class ArchitectureExtensionTests(SimpleTestCase):
         validation_status = loader.build_validation_status()
 
         self.assertTrue(validation_status.has_errors)
-        self.assertTrue(any("site_url: required" in error for error in validation_status.errors))
+        self.assertTrue(
+            any("site_url: required" in error for error in validation_status.errors)
+        )

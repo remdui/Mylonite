@@ -27,7 +27,10 @@ class WebViewTests(TestCase):
 
     def test_homepage_uses_context_factory(self):
         expected_context = {
-            "portfolio_site": {"site_title": "Mylonite", "site_url": "https://example.test"},
+            "portfolio_site": {
+                "site_title": "Mylonite",
+                "site_url": "https://example.test",
+            },
             "owner_profile": {"full_name": "Test Owner"},
             "content_status": {
                 "using_example_files": False,

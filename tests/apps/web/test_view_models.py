@@ -11,7 +11,11 @@ class ViewModelTests(SimpleTestCase):
             footer_show_generated_by=True,
             footer_repository_url="",
             owner_full_name="Owner Name",
-            content_status={"using_example_files": False, "example_files": [], "missing_files": []},
+            content_status={
+                "using_example_files": False,
+                "example_files": [],
+                "missing_files": [],
+            },
             current_year=2026,
         )
 

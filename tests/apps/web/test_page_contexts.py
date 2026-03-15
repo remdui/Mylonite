@@ -2,7 +2,12 @@ from unittest.mock import Mock
 
 from django.test import SimpleTestCase
 
-from mylonite.core.content_types import ContentStatus, PersonProfile, SiteConfig, ValidationStatus
+from mylonite.core.content_types import (
+    ContentStatus,
+    PersonProfile,
+    SiteConfig,
+    ValidationStatus,
+)
 from apps.web.page_contexts import WebPageContextFactory
 
 
@@ -31,7 +36,9 @@ class PageContextBuilderTests(SimpleTestCase):
             missing_files=[],
         )
         loader.current_year.return_value = 2026
-        loader.build_validation_status.return_value = ValidationStatus(has_errors=False, errors=[])
+        loader.build_validation_status.return_value = ValidationStatus(
+            has_errors=False, errors=[]
+        )
 
         context = WebPageContextFactory(loader=loader).build_homepage_context()
 
@@ -74,7 +81,9 @@ class PageRegistryTests(SimpleTestCase):
             missing_files=[],
         )
         loader.current_year.return_value = 2026
-        loader.build_validation_status.return_value = ValidationStatus(has_errors=False, errors=[])
+        loader.build_validation_status.return_value = ValidationStatus(
+            has_errors=False, errors=[]
+        )
 
         context = WebPageContextFactory(
             loader=loader,

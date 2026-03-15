@@ -4,7 +4,11 @@ from typing import Callable, Protocol, TypeVar
 from .content_mappers import map_site_config
 from .content_registry import ContentEntityRegistry
 from .content_repository import FileSystemContentRepository
-from mylonite.core.content_schema import SITE_CONFIG_SCHEMA, SchemaDefinition, validate_record
+from mylonite.core.content_schema import (
+    SITE_CONFIG_SCHEMA,
+    SchemaDefinition,
+    validate_record,
+)
 from mylonite.core.content_types import (
     ContentStatus,
     PersonProfile,
@@ -90,9 +94,7 @@ class PortfolioContentLoader:
         self._track_sources(sources)
 
         validated_entry = (
-            self._validate(object_id, entry, schema)
-            if schema is not None
-            else entry
+            self._validate(object_id, entry, schema) if schema is not None else entry
         )
         return mapper(object_id, validated_entry, body)
 
