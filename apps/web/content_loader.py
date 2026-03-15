@@ -76,6 +76,12 @@ class PortfolioContentLoader:
         try:
             sync_content_examples(self.repository.content_root, self.entity_registry)
             return True
+        except PermissionError:
+            logger.warning(
+                "Unable to sync content examples for %s (permission denied)",
+                self.repository.content_root,
+            )
+            return False
         except OSError:
             logger.warning(
                 "Unable to sync content examples for %s",
