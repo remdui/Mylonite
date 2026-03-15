@@ -30,4 +30,4 @@ RUN find /app -type d -exec chmod 0755 {} \; \
 EXPOSE 8000
 
 ENTRYPOINT ["/usr/local/bin/mylonite-entrypoint"]
-CMD ["gunicorn", "mylonite.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2", "--capture-output", "--error-logfile", "-", "--access-logfile", "-"]
+CMD ["gunicorn", "mylonite.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2", "--worker-tmp-dir", "/tmp", "--no-control-socket", "--capture-output", "--error-logfile", "-", "--access-logfile", "-"]
