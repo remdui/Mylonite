@@ -76,7 +76,7 @@ class ContentLoaderTests(TestCase):
                 return {}, []
 
             def load_entity_record(
-                self, object_id: str, *, text_filename: str | None = "website.md"
+                self, object_id: str, *, text_filename: str | None = None
             ):
                 return {"id": object_id, "name": "Custom"}, "Body", []
 
@@ -104,7 +104,7 @@ class ContentLoaderTests(TestCase):
                 return {"site_title": "Site"}, []
 
             def load_entity_record(
-                self, object_id: str, *, text_filename: str | None = "website.md"
+                self, object_id: str, *, text_filename: str | None = None
             ):
                 return {"id": object_id}, "Body", []
 

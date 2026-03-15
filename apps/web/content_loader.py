@@ -33,7 +33,7 @@ class ContentRepository(Protocol):
         self,
         object_id: str,
         *,
-        text_filename: str | None = "website.md",
+        text_filename: str | None = None,
     ) -> tuple[dict, str, list[SourceInfo]]: ...
 
     def list_entity_ids(self, *, prefix: str = "") -> list[str]: ...
@@ -107,7 +107,7 @@ class PortfolioContentLoader:
         object_id: str,
         mapper: Callable[[str, dict, str], EntityModel],
         *,
-        text_filename: str | None = "website.md",
+        text_filename: str | None = None,
         schema: SchemaDefinition | None = None,
     ) -> EntityModel:
         entry, body, sources = self.repository.load_entity_record(

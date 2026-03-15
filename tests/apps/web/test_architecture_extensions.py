@@ -39,7 +39,7 @@ class ArchitectureExtensionTests(SimpleTestCase):
                 return {}, []
 
             def load_entity_record(
-                self, object_id: str, *, text_filename: str | None = "website.md"
+                self, object_id: str, *, text_filename: str | None = None
             ):
                 return {"title": "Project A"}, "Project body", []
 
@@ -110,7 +110,7 @@ class ArchitectureExtensionTests(SimpleTestCase):
                 return {"site_title": "Site"}, []
 
             def load_entity_record(
-                self, object_id: str, *, text_filename: str | None = "website.md"
+                self, object_id: str, *, text_filename: str | None = None
             ):
                 return {}, "", []
 
