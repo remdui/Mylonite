@@ -100,6 +100,7 @@ Optional overrides:
 
 - If you want to customize bind paths, port, or runtime UID/GID mapping, copy `.env.example` to `.env` and adjust values.
 - On Linux, leave `MYLONITE_PUID/MYLONITE_PGID` at `1000` unless your user/group IDs are different.
+- Theme folders are bind-mounted from `./themes` by default (`MYLONITE_THEMES_DIR`).
 
 #### Initialize editable local content
 
@@ -210,7 +211,7 @@ Mylonite/
   runtime/config/       Local runtime configs
   runtime/data/         Persistent runtime states
   scripts/              Helper scripts
-  static/               Static source files
+  themes/               Theme folders and static theme assets
   templates/            Django website templates
 ```
 
@@ -225,4 +226,3 @@ Mylonite/
 ## License
 
 Licensed under the GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later). See the `LICENSE` file for details.
-

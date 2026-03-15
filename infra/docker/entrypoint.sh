@@ -4,6 +4,7 @@ set -eu
 CONFIG_ROOT="${MYLONITE_CONFIG_ROOT:-/config}"
 DATA_ROOT="${MYLONITE_DATA_ROOT:-/data}"
 CONTENT_ROOT="${MYLONITE_CONTENT_ROOT:-/content}"
+THEMES_ROOT="${MYLONITE_THEMES_ROOT:-/app/themes}"
 DB_PATH="${MYLONITE_DB_PATH:-$DATA_ROOT/db/mylonite.sqlite3}"
 
 ensure_dir() {
@@ -28,6 +29,7 @@ umask 0022
 ensure_dir "$CONFIG_ROOT"
 ensure_dir "$DATA_ROOT"
 ensure_dir "$(dirname "$DB_PATH")"
+# Django collectstatic output (admin/staticfiles pipeline), not theme source files.
 ensure_dir "$DATA_ROOT/static"
 ensure_dir "$DATA_ROOT/media"
 
@@ -41,6 +43,7 @@ chmod 0644 "$DB_PATH" || true
 export MYLONITE_CONFIG_ROOT="$CONFIG_ROOT"
 export MYLONITE_DATA_ROOT="$DATA_ROOT"
 export MYLONITE_CONTENT_ROOT="$CONTENT_ROOT"
+export MYLONITE_THEMES_ROOT="$THEMES_ROOT"
 export MYLONITE_DB_PATH="$DB_PATH"
 
 python - <<'PY'

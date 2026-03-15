@@ -12,6 +12,12 @@ class UrlRoutingTests(SimpleTestCase):
     def test_health_routes_to_health_view(self):
         self.assertEqual(resolve(reverse("health")).func, web_views.health)
 
+    def test_theme_static_routes_to_theme_static_view(self):
+        self.assertEqual(
+            resolve(reverse("theme_static", kwargs={"asset_path": "css/site.css"})).func,
+            web_views.theme_static,
+        )
+
     def test_panel_routes_resolve_to_expected_views(self):
         self.assertEqual(
             resolve(reverse("panel:root")).func.view_class, panel_views.AdminRootView

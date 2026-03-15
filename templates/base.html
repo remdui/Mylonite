@@ -1,11 +1,10 @@
-{% load static %}
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% if page_title %}{{ page_title }} · {% endif %}{{ portfolio_site.site_title }}</title>
-    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+    <link rel="stylesheet" href="{{ theme_css_url }}">
 </head>
 <body>
     {% if content_status.using_example_files %}

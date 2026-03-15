@@ -6,7 +6,7 @@
 /mylonite/ @remdui
 /templates/ @remdui
 /content/ @remdui
-/static/ @remdui
+/themes/ @remdui
 /tests/ @remdui
 
 # Infrastructure and automation

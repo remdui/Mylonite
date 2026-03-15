@@ -12,6 +12,7 @@ CONFIG_ROOT = Path(os.getenv("MYLONITE_CONFIG_ROOT", BASE_DIR / "runtime" / "con
 RUNTIME_ENV_FILE = CONFIG_ROOT / ".env"
 DATA_ROOT = Path(os.getenv("MYLONITE_DATA_ROOT", BASE_DIR / "runtime" / "data"))
 CONTENT_ROOT = Path(os.getenv("MYLONITE_CONTENT_ROOT", BASE_DIR / "content"))
+THEMES_ROOT = Path(os.getenv("MYLONITE_THEMES_ROOT", BASE_DIR / "themes"))
 DB_PATH = Path(os.getenv("MYLONITE_DB_PATH", DATA_ROOT / "db" / "mylonite.sqlite3"))
 STATIC_ROOT_PATH = DATA_ROOT / "static"
 MEDIA_ROOT_PATH = DATA_ROOT / "media"
@@ -165,6 +166,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "apps.web.context_processors.theme_assets",
             ],
         },
     },
@@ -202,7 +204,7 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = STATIC_ROOT_PATH
-STATICFILES_DIRS = [BASE_DIR / "static"]
+STATICFILES_DIRS = []
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = MEDIA_ROOT_PATH
@@ -251,3 +253,4 @@ SECURE_HSTS_PRELOAD = bool(deploy_config.get("secure_hsts_preload", False))
 MYLONITE_CONFIG_ROOT = CONFIG_ROOT
 MYLONITE_CONTENT_ROOT = CONTENT_ROOT
 MYLONITE_DATA_ROOT = DATA_ROOT
+MYLONITE_THEMES_ROOT = THEMES_ROOT

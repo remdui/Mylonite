@@ -9,6 +9,7 @@ services:
       MYLONITE_DATA_ROOT: /data
       MYLONITE_DB_PATH: /data/db/mylonite.sqlite3
       MYLONITE_CONTENT_ROOT: /content
+      MYLONITE_THEMES_ROOT: /themes
     volumes:
       - type: bind
         source: ${MYLONITE_CONFIG_DIR:-./runtime/config}
@@ -19,6 +20,9 @@ services:
       - type: bind
         source: ${MYLONITE_CONTENT_DIR:-./content}
         target: /content
+      - type: bind
+        source: ${MYLONITE_THEMES_DIR:-./themes}
+        target: /themes
     user: "${MYLONITE_PUID:-1000}:${MYLONITE_PGID:-1000}"
     restart: unless-stopped
     init: true

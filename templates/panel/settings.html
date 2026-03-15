@@ -1,67 +1,143 @@
 {% extends "panel/base.html" %}
 
 {% block panel_content %}
-<section class="card">
-    <div class="card-body">
-        <h2 class="card-title">Change password</h2>
-        <p class="card-text">
-            Enter your current password and choose a new one. Password validation rules are enforced automatically.
-        </p>
+<div class="stack">
+    <section class="card">
+        <div class="card-body">
+            <h2 class="card-title">Theme</h2>
+            <p class="card-text">
+                Themes are loaded from local folders in <code>themes/</code>. Only valid folders with
+                <code>theme.toml</code> metadata and a <code>static/</code> directory are selectable.
+            </p>
 
-        <form method="post" novalidate class="form-grid" style="margin-top: 1.25rem;">
-            {% csrf_token %}
-
-            {% if form.non_field_errors %}
-                <ul class="non-field-errors">
-                    {% for error in form.non_field_errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
+            {% if not custom_theme_allowed %}
+                <p class="form-help" style="margin-top: 0.9rem;">
+                    Custom themes are disabled in site configuration. Only the default theme can be selected.
+                </p>
             {% endif %}
 
-            <div class="form-field">
-                {{ form.old_password.label_tag }}
-                {{ form.old_password }}
-                {% if form.old_password.errors %}
-                    <ul class="form-errors">
-                        {% for error in form.old_password.errors %}
+            <form method="post" novalidate class="form-grid" style="margin-top: 1.25rem;">
+                {% csrf_token %}
+                <input type="hidden" name="settings_action" value="theme">
+
+                {% if theme_form.non_field_errors %}
+                    <ul class="non-field-errors">
+                        {% for error in theme_form.non_field_errors %}
                             <li>{{ error }}</li>
                         {% endfor %}
                     </ul>
                 {% endif %}
-            </div>
 
-            <div class="form-field">
-                {{ form.new_password1.label_tag }}
-                {{ form.new_password1 }}
-                {% if form.new_password1.help_text %}
-                    <p class="form-help">{{ form.new_password1.help_text|safe }}</p>
-                {% endif %}
-                {% if form.new_password1.errors %}
-                    <ul class="form-errors">
-                        {% for error in form.new_password1.errors %}
+                <div class="form-field">
+                    {{ theme_form.theme_name.label_tag }}
+                    {{ theme_form.theme_name }}
+                    {% if theme_form.theme_name.errors %}
+                        <ul class="form-errors">
+                            {% for error in theme_form.theme_name.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="button-row">
+                    <button class="button" type="submit">Apply theme</button>
+                </div>
+            </form>
+
+            <p class="form-help" style="margin-top: 1rem;">
+                Active theme folder: <code>{{ active_theme_id }}</code>
+            </p>
+
+            {% if missing_theme_files %}
+                <div class="message warning" style="margin-top: 1rem;">
+                    The active theme is missing {{ missing_theme_files|length }} required static files.
+                    Missing files fall back to the default theme automatically.
+                </div>
+            {% endif %}
+
+            <div class="stack" style="margin-top: 1rem;">
+                {% for theme in theme_options %}
+                    <section class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">
+                                {{ theme.metadata.name }}
+                                {% if theme.theme_id == active_theme_id %}(Active){% endif %}
+                            </h3>
+                            <p class="card-text">{{ theme.metadata.description }}</p>
+                            <p class="form-help" style="margin-top: 0.6rem;">
+                                Folder: <code>{{ theme.theme_id }}</code> · Version: {{ theme.metadata.version }}
+                            </p>
+                        </div>
+                    </section>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="card-body">
+            <h2 class="card-title">Change password</h2>
+            <p class="card-text">
+                Enter your current password and choose a new one. Password validation rules are enforced automatically.
+            </p>
+
+            <form method="post" novalidate class="form-grid" style="margin-top: 1.25rem;">
+                {% csrf_token %}
+                <input type="hidden" name="settings_action" value="password">
+
+                {% if password_form.non_field_errors %}
+                    <ul class="non-field-errors">
+                        {% for error in password_form.non_field_errors %}
                             <li>{{ error }}</li>
                         {% endfor %}
                     </ul>
                 {% endif %}
-            </div>
 
-            <div class="form-field">
-                {{ form.new_password2.label_tag }}
-                {{ form.new_password2 }}
-                {% if form.new_password2.errors %}
-                    <ul class="form-errors">
-                        {% for error in form.new_password2.errors %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-            </div>
+                <div class="form-field">
+                    {{ password_form.old_password.label_tag }}
+                    {{ password_form.old_password }}
+                    {% if password_form.old_password.errors %}
+                        <ul class="form-errors">
+                            {% for error in password_form.old_password.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
 
-            <div class="button-row">
-                <button class="button" type="submit">Update password</button>
-            </div>
-        </form>
-    </div>
-</section>
+                <div class="form-field">
+                    {{ password_form.new_password1.label_tag }}
+                    {{ password_form.new_password1 }}
+                    {% if password_form.new_password1.help_text %}
+                        <p class="form-help">{{ password_form.new_password1.help_text|safe }}</p>
+                    {% endif %}
+                    {% if password_form.new_password1.errors %}
+                        <ul class="form-errors">
+                            {% for error in password_form.new_password1.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="form-field">
+                    {{ password_form.new_password2.label_tag }}
+                    {{ password_form.new_password2 }}
+                    {% if password_form.new_password2.errors %}
+                        <ul class="form-errors">
+                            {% for error in password_form.new_password2.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="button-row">
+                    <button class="button" type="submit">Update password</button>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
 {% endblock %}

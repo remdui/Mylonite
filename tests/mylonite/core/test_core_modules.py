@@ -20,6 +20,22 @@ from mylonite.core.theme_loader import ThemeResolver
 
 
 class CoreModulesTests(TestCase):
+    @staticmethod
+    def _create_theme(root: Path, theme_id: str) -> None:
+        theme_root = root / theme_id
+        (theme_root / "static").mkdir(parents=True)
+        (theme_root / "theme.toml").write_text(
+            '\n'.join(
+                [
+                    f'name = "{theme_id.title()}"',
+                    f'description = "{theme_id} theme"',
+                    'version = "1.0.0"',
+                ]
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
     def test_validation_status_to_dict(self):
         status = ValidationStatus(has_errors=True, errors=["site: site_url: required"])
 
@@ -58,15 +74,42 @@ class CoreModulesTests(TestCase):
     def test_theme_resolver_prefers_existing_requested_theme(self):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
-            (root / "default" / "templates").mkdir(parents=True)
-            (root / "default" / "static").mkdir(parents=True)
-            (root / "ocean" / "templates").mkdir(parents=True)
-            (root / "ocean" / "static").mkdir(parents=True)
+            self._create_theme(root, "default")
+            self._create_theme(root, "ocean")
 
-            paths = ThemeResolver(root).resolve(ThemeSettings(name="ocean"))
+            resolved = ThemeResolver(root).resolve(ThemeSettings(name="ocean"))
 
-        self.assertEqual(paths.template_dir.parent.name, "ocean")
-        self.assertEqual(paths.static_dir.parent.name, "ocean")
+        self.assertEqual(resolved.active_theme.theme_id, "ocean")
+        self.assertEqual(resolved.active_theme.static_dir.parent.name, "ocean")
+
+    def test_theme_resolver_reports_missing_required_static_assets(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._create_theme(root, "default")
+            self._create_theme(root, "minimal")
+
+            (root / "default" / "static" / "css").mkdir(parents=True, exist_ok=True)
+            (root / "default" / "static" / "css" / "site.css").write_text(
+                "body { color: red; }\n",
+                encoding="utf-8",
+            )
+
+            resolved = ThemeResolver(root).resolve(ThemeSettings(name="minimal"))
+
+        self.assertEqual(
+            resolved.missing_required_static_files,
+            ("css/site.css",),
+        )
+
+    def test_theme_resolver_ignores_invalid_theme_folders(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._create_theme(root, "default")
+            (root / "broken-theme" / "static").mkdir(parents=True, exist_ok=True)
+
+            themes = ThemeResolver(root).discover_themes()
+
+        self.assertEqual([theme.theme_id for theme in themes], ["default"])
 
     def test_build_cache_key_changes_for_variant(self):
         base = BuildInput(site_id="site", content_version="1", theme_name="default")
