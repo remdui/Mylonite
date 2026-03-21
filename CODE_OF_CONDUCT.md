@@ -1,60 +1,76 @@
 # Contributor Covenant Code of Conduct
 
+This project adopts the Contributor Covenant Code of Conduct, version 3.0.
+
 ## Our Pledge
 
-We as members, contributors, and maintainers pledge to make participation in our
-community a harassment-free experience for everyone, regardless of age, body
-size, visible or invisible disability, ethnicity, sex characteristics, gender
-identity and expression, level of experience, education, socio-economic status,
-nationality, personal appearance, race, religion, or sexual identity and
-orientation.
+We pledge to make our community welcoming, safe, and equitable for all.
+We are committed to fostering an environment that respects the dignity,
+rights, and contributions of all participants, regardless of background,
+identity, experience, or status.
 
-We pledge to act and interact in ways that contribute to an open, welcoming,
-diverse, inclusive, and healthy community.
+## Encouraged Behaviors
 
-## Our Standards
+To support a healthy community, contributors are expected to:
 
-Examples of behavior that contributes to a positive environment include:
+- engage kindly and honestly with others;
+- respect different viewpoints and experiences;
+- take responsibility for their actions and contributions;
+- give and accept constructive feedback gracefully;
+- help repair harm when it occurs; and
+- behave in ways that protect the well-being of the community.
 
-- Demonstrating empathy and kindness toward other people
-- Being respectful of differing opinions, viewpoints, and experiences
-- Giving and gracefully accepting constructive feedback
-- Accepting responsibility and apologizing to those affected by our mistakes
-- Focusing on what is best not just for us as individuals, but for the overall community
+## Restricted Behaviors
 
-Examples of unacceptable behavior include:
+The following behaviors are not acceptable in this community:
 
-- The use of sexualized language or imagery, and sexual attention or advances of any kind
-- Trolling, insulting or derogatory comments, and personal or political attacks
-- Public or private harassment
-- Publishing others' private information without explicit permission
-- Other conduct which could reasonably be considered inappropriate in a professional setting
+- harassment or repeated unwanted attention;
+- insulting, demeaning, or pejorative attacks;
+- stereotyping or discrimination;
+- sexualized behavior that is inappropriate for the context;
+- sharing private or confidential information without permission;
+- encouraging, threatening, or causing harm; and
+- other conduct that undermines the safety and health of the community.
 
-## Enforcement Responsibilities
+### Other Restrictions
 
-Project maintainers are responsible for clarifying and enforcing standards of
-acceptable behavior and will take appropriate and fair corrective action in
-response to any behavior they deem inappropriate, threatening, offensive, or
-harmful.
+The following are also prohibited:
 
-Project maintainers have the right and responsibility to remove, edit, or reject
-comments, commits, code, wiki edits, issues, and other contributions that are
-not aligned to this Code of Conduct, and will communicate reasons for moderation
-decisions when appropriate.
+- impersonating someone else or misleading others about identity;
+- failing to credit contributed sources appropriately;
+- posting promotional or commercial material outside community norms; and
+- irresponsibly sharing content that includes or promotes restricted behavior.
+
+## Reporting an Issue
+
+If you believe someone has violated this Code of Conduct, please report it
+privately through one of the following channels:
+
+- contact@remyduijsens.com
+- GitHub's reporting and moderation tools, when appropriate
+
+Maintainers will review reports promptly, handle them as confidentially as
+possible, and take appropriate action to protect the community.
+
+## Addressing and Repairing Harm
+
+When a report is confirmed, maintainers may use an enforcement ladder based on
+severity and pattern of behavior, including:
+
+1. Warning
+2. Temporarily limited activities
+3. Temporary suspension
+4. Permanent ban
+
+The exact response may vary depending on impact, safety needs, and whether a
+pattern of repeated harmful behavior exists.
 
 ## Scope
 
-This Code of Conduct applies within all project spaces and also applies when an
-individual is officially representing the project in public spaces.
-
-## Enforcement
-
-Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the maintainers at **contact@remyduijsens.com**.
-
-All complaints will be reviewed and investigated promptly and fairly.
+This Code of Conduct applies within all community spaces and when individuals
+are representing this project in public or semi-public spaces.
 
 ## Attribution
 
-This Code of Conduct is adapted from the [Contributor Covenant](https://www.contributor-covenant.org),
-version 2.1.
+This Code of Conduct is adapted from the Contributor Covenant, version 3.0:
+https://www.contributor-covenant.org/version/3/0/code_of_conduct/
