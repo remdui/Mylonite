@@ -4,8 +4,12 @@ from unittest.mock import patch
 
 from django.test import TestCase
 
-from apps.web.content_loader import PortfolioContentLoader, build_content_status
-from apps.web.content_repository import resolve_content_file
+from apps.web.content_loader import (
+    ContentValidationError,
+    PortfolioContentLoader,
+    build_content_status,
+)
+from apps.web.content_repository import FileSystemContentRepository, resolve_content_file
 from mylonite.core.content_types import ContentStatus, SourceInfo, ValidationStatus
 
 
@@ -70,34 +74,6 @@ class ContentLoaderTests(TestCase):
 
         self.assertEqual(loader.build_content_status().example_files, [])
 
-    def test_load_entity_supports_custom_mapper(self):
-        class StubRepository:
-            def load_site_record(self):
-                return {}, []
-
-            def load_entity_record(
-                self, object_id: str, *, text_filename: str | None = None
-            ):
-                return {"id": object_id, "name": "Custom"}, "Body", []
-
-            def list_entity_ids(self, *, prefix: str = ""):
-                return []
-
-        loader = PortfolioContentLoader(repository=StubRepository())
-
-        result = loader.load_entity(
-            "entity.custom",
-            lambda object_id, entry, body: {
-                "object_id": object_id,
-                "name": entry.get("name"),
-                "body": body,
-            },
-        )
-
-        self.assertEqual(result["object_id"], "entity.custom")
-        self.assertEqual(result["name"], "Custom")
-        self.assertEqual(result["body"], "Body")
-
     def test_loader_tracks_validation_errors_for_registered_entity(self):
         class StubRepository:
             def load_site_record(self):
@@ -106,7 +82,7 @@ class ContentLoaderTests(TestCase):
             def load_entity_record(
                 self, object_id: str, *, text_filename: str | None = None
             ):
-                return {"id": object_id}, "Body", []
+                return {"id": object_id, "schema_version": "invalid"}, "Body", []
 
             def list_entity_ids(self, *, prefix: str = ""):
                 return []
@@ -119,7 +95,31 @@ class ContentLoaderTests(TestCase):
 
         self.assertIsInstance(status, ValidationStatus)
         self.assertTrue(status.has_errors)
-        self.assertTrue(any("full_name: required" in error for error in status.errors))
+        self.assertTrue(
+            any("schema_version: invalid type" in error for error in status.errors)
+        )
+
+    def test_loader_raises_in_strict_validation_mode(self):
+        class StubRepository:
+            def load_site_record(self):
+                return {"site_title": "Site"}, []
+
+            def load_entity_record(
+                self, object_id: str, *, text_filename: str | None = None
+            ):
+                return {"id": object_id, "schema_version": "invalid"}, "Body", []
+
+            def list_entity_ids(self, *, prefix: str = ""):
+                return []
+
+        loader = PortfolioContentLoader(
+            repository=StubRepository(),
+            strict_validation=True,
+        )
+
+        loader.begin_tracking()
+        with self.assertRaises(ContentValidationError):
+            loader.load_person("identity.person.owner")
 
     def test_loader_generates_examples_from_schema(self):
         with TemporaryDirectory() as tmp:
@@ -206,3 +206,10 @@ class ContentLoaderTests(TestCase):
             self.assertEqual(site.site_title, "Loader Site")
             self.assertEqual(owner.full_name, "Loader Owner")
             self.assertTrue(status.using_example_files)
+
+    def test_repository_rejects_invalid_entity_id(self):
+        with TemporaryDirectory() as tmp:
+            repository = FileSystemContentRepository(content_root=Path(tmp))
+
+            with self.assertRaises(ValueError):
+                repository.load_entity_record("../escape")

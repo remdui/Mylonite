@@ -93,6 +93,14 @@ PERSON_PROFILE_SCHEMA = SchemaDefinition(
                 "and what kind of problems or projects interest you."
             ),
         ),
+        FieldRule(
+            "bio",
+            required=False,
+            parser=str,
+            default=(
+                "Write a short first-person bio for the homepage hero section."
+            ),
+        ),
         FieldRule("profile_image_path", required=False, parser=str, default=""),
     ),
 )
@@ -139,6 +147,9 @@ def validate_record(schema: SchemaDefinition, payload: dict) -> tuple[dict, list
     for field in schema.fields:
         value = payload.get(field.name)
         if value in (None, ""):
+            if field.default is not _MISSING:
+                normalized[field.name] = deepcopy(field.default)
+                continue
             if field.required:
                 errors.append(f"{field.name}: required")
             continue

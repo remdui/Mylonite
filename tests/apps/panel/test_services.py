@@ -13,6 +13,7 @@ from apps.panel.services import (
     get_login_lockout,
     normalize_username,
     panel_is_initialized,
+    prune_stale_login_throttles,
     register_failed_login_attempt,
     user_is_owner,
 )
@@ -114,3 +115,19 @@ class LoginThrottleServiceTests(TestCase):
 
         clear_login_throttle(request, "owner")
         self.assertEqual(LoginThrottle.objects.count(), 0)
+
+    @override_settings(PANEL_LOGIN_THROTTLE_RETENTION_SECONDS=60)
+    def test_prune_stale_login_throttles(self):
+        request = self.factory.post("/admin/login/", REMOTE_ADDR="127.0.0.1")
+        register_failed_login_attempt(request, "owner")
+
+        throttle = LoginThrottle.objects.get(key="panel-login:user:owner")
+        throttle.last_failure_at = timezone.now() - timedelta(seconds=120)
+        throttle.save(update_fields=["last_failure_at", "updated_at"])
+
+        deleted = prune_stale_login_throttles()
+
+        self.assertGreaterEqual(deleted, 1)
+        self.assertFalse(
+            LoginThrottle.objects.filter(key="panel-login:user:owner").exists()
+        )

@@ -102,7 +102,13 @@ class ThemeResolver:
     """Discovers themes and resolves static assets with default-theme fallback."""
 
     _discovery_cache: ClassVar[
-        dict[str, tuple[tuple[tuple[str, int, int], ...], tuple[ThemeDefinition, ...]]]
+        dict[
+            str,
+            tuple[
+                tuple[tuple[str, int, int, tuple[tuple[str, int], ...]], ...],
+                tuple[ThemeDefinition, ...],
+            ],
+        ]
     ] = {}
     _warned_selection_fallbacks: ClassVar[set[str]] = set()
     _warned_missing_assets: ClassVar[set[str]] = set()
@@ -363,8 +369,10 @@ class ThemeResolver:
             ", ".join(missing_files),
         )
 
-    def _build_discovery_signature(self) -> tuple[tuple[str, int, int], ...]:
-        entries: list[tuple[str, int, int]] = []
+    def _build_discovery_signature(
+        self,
+    ) -> tuple[tuple[str, int, int, tuple[tuple[str, int], ...]], ...]:
+        entries: list[tuple[str, int, int, tuple[tuple[str, int], ...]]] = []
         for child in sorted(self.themes_root.iterdir(), key=lambda path: path.name):
             if not child.is_dir():
                 continue
@@ -377,7 +385,28 @@ class ThemeResolver:
             static_mtime_ns = (
                 int(static_dir.stat().st_mtime_ns) if static_dir.exists() else -1
             )
-            entries.append((child.name, metadata_mtime_ns, static_mtime_ns))
+
+            static_files_signature: tuple[tuple[str, int], ...] = ()
+            if static_dir.exists():
+                static_files_signature = tuple(
+                    sorted(
+                        (
+                            file_path.relative_to(static_dir).as_posix(),
+                            int(file_path.stat().st_mtime_ns),
+                        )
+                        for file_path in static_dir.rglob("*")
+                        if file_path.is_file()
+                    )
+                )
+
+            entries.append(
+                (
+                    child.name,
+                    metadata_mtime_ns,
+                    static_mtime_ns,
+                    static_files_signature,
+                )
+            )
 
         return tuple(entries)
 

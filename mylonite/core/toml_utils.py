@@ -1,7 +1,10 @@
-"""Minimal TOML rendering helpers for deterministic local file output."""
+"""Minimal TOML loading/rendering helpers for deterministic local file output."""
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
+
+import tomllib
 
 
 @dataclass(frozen=True)
@@ -71,3 +74,14 @@ def render_toml(data: dict[str, Any]) -> str:
         )
 
     return "\n".join(lines).rstrip() + "\n"
+
+
+def load_toml_file(path: Path) -> dict[str, Any]:
+    """Load a TOML document from disk, returning an empty mapping when absent."""
+    if not path.exists():
+        return {}
+
+    with path.open("rb") as handle:
+        data = tomllib.load(handle)
+
+    return data if isinstance(data, dict) else {}

@@ -11,6 +11,8 @@
 
     {% if home_page.hero.bio %}
         <p class="tagline">{{ home_page.hero.bio|linebreaksbr }}</p>
+    {% elif home_page.hero.intro_markdown %}
+        <p class="tagline">{{ home_page.hero.intro_markdown|linebreaksbr }}</p>
     {% elif home_page.hero.summary %}
         <p class="tagline">{{ home_page.hero.summary }}</p>
     {% endif %}

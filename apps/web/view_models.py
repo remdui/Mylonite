@@ -32,6 +32,7 @@ class HomeHeroViewModel:
     display_name: str
     headline: str
     bio: str
+    intro_markdown: str
     summary: str
 
     def to_context(self) -> dict:
@@ -39,6 +40,7 @@ class HomeHeroViewModel:
             "display_name": self.display_name,
             "headline": self.headline,
             "bio": self.bio,
+            "intro_markdown": self.intro_markdown,
             "summary": self.summary,
         }
 

@@ -1,8 +1,9 @@
-import tomllib
 from pathlib import Path
 
 from django.conf import settings
 
+from mylonite.core.content_conventions import is_valid_entity_id
+from mylonite.core.toml_utils import load_toml_file as load_toml_document
 from mylonite.core.content_types import SourceInfo
 
 CONTENT_ROOT = Path(settings.MYLONITE_CONTENT_ROOT)
@@ -70,8 +71,7 @@ def load_toml_file(
     if resolved_path is None:
         return {}, source
 
-    with resolved_path.open("rb") as handle:
-        return tomllib.load(handle), source
+    return load_toml_document(resolved_path), source
 
 
 def load_text_file(
@@ -106,7 +106,12 @@ class FileSystemContentRepository:
         *,
         text_filename: str | None = None,
     ) -> tuple[dict, str, list[SourceInfo]]:
+        if not is_valid_entity_id(object_id):
+            raise ValueError(f"invalid entity object_id: {object_id!r}")
+
         root = self.content_root / "entities" / object_id
+        if self.content_root not in root.resolve().parents:
+            raise ValueError(f"invalid entity object_id: {object_id!r}")
 
         entry, entry_source = load_toml_file(
             root / "entry.toml",
