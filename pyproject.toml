@@ -45,6 +45,6 @@ include = ["mylonite*", "apps*"]
 dev = [
   "coverage[toml]>=7.14.2,<8.0",
   "pytest-django>=4.9",
-  "ruff>=0.9",
+  "ruff>=0.15.18",
   "django-debug-toolbar>=7.0.0",
 ]
