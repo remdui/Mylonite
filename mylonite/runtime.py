@@ -1,7 +1,34 @@
 from __future__ import annotations
 
+import os
+from dataclasses import dataclass
 from pathlib import Path
 from tempfile import NamedTemporaryFile
+
+
+@dataclass(frozen=True)
+class RuntimePaths:
+    config_root: Path
+    data_root: Path
+    db_path: Path
+    static_root: Path
+    media_root: Path
+
+
+def resolve_runtime_paths(base_dir: Path) -> RuntimePaths:
+    config_root = Path(
+        os.getenv("MYLONITE_CONFIG_ROOT", base_dir / "runtime" / "config")
+    )
+    data_root = Path(os.getenv("MYLONITE_DATA_ROOT", base_dir / "runtime" / "data"))
+    db_path = Path(os.getenv("MYLONITE_DB_PATH", data_root / "db" / "mylonite.sqlite3"))
+
+    return RuntimePaths(
+        config_root=config_root,
+        data_root=data_root,
+        db_path=db_path,
+        static_root=data_root / "static",
+        media_root=data_root / "media",
+    )
 
 
 RUNTIME_ENV_HEADER = [
@@ -137,3 +164,8 @@ def ensure_runtime_env_file(path: Path) -> tuple[bool, bool]:
 
     safe_chmod(path, 0o600)
     return False, False
+
+
+def ensure_runtime_directories(paths: list[Path]) -> None:
+    for path in paths:
+        path.mkdir(parents=True, exist_ok=True)

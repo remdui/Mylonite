@@ -18,8 +18,10 @@ from mylonite.core.content_types import (
 def map_site_config(site_data: dict) -> SiteConfig:
     defaults = schema_defaults(SITE_CONFIG_SCHEMA)
     merged_site_data = {**defaults, **site_data}
-    theme_data = merged_site_data.get("theme", {})
-    install_data = merged_site_data.get("install", {})
+    raw_theme_data = merged_site_data.get("theme", {})
+    theme_data = raw_theme_data if isinstance(raw_theme_data, dict) else {}
+    raw_install_data = merged_site_data.get("install", {})
+    install_data = raw_install_data if isinstance(raw_install_data, dict) else {}
     hosting_mode_value = merged_site_data.get("hosting_mode", HostingMode.LOCAL.value)
 
     try:
@@ -57,7 +59,7 @@ def map_person_profile(object_id: str, entry: dict, _: str) -> PersonProfile:
         display_name=merged_entry.get("display_name", ""),
         headline=merged_entry.get("headline", ""),
         summary=merged_entry.get("summary", ""),
-        bio=merged_entry.get("summary", ""),
+        bio=merged_entry.get("bio") or merged_entry.get("summary", ""),
         profile_image_path=merged_entry.get("profile_image_path", ""),
     )
 

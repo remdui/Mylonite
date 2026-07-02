@@ -1,33 +1,23 @@
 import os
-import tomllib
 from ipaddress import ip_network
 from pathlib import Path
 from urllib.parse import urlparse
 
-from mylonite.runtime import load_simple_env
+from mylonite.core.toml_utils import load_toml_file
+from mylonite.runtime import load_simple_env, resolve_runtime_paths
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-CONFIG_ROOT = Path(os.getenv("MYLONITE_CONFIG_ROOT", BASE_DIR / "runtime" / "config"))
+RUNTIME_PATHS = resolve_runtime_paths(BASE_DIR)
+CONFIG_ROOT = RUNTIME_PATHS.config_root
 RUNTIME_ENV_FILE = CONFIG_ROOT / ".env"
-DATA_ROOT = Path(os.getenv("MYLONITE_DATA_ROOT", BASE_DIR / "runtime" / "data"))
+DATA_ROOT = RUNTIME_PATHS.data_root
 CONTENT_ROOT = Path(os.getenv("MYLONITE_CONTENT_ROOT", BASE_DIR / "content"))
 THEMES_ROOT = Path(os.getenv("MYLONITE_THEMES_ROOT", BASE_DIR / "themes"))
-DB_PATH = Path(os.getenv("MYLONITE_DB_PATH", DATA_ROOT / "db" / "mylonite.sqlite3"))
-STATIC_ROOT_PATH = DATA_ROOT / "static"
-MEDIA_ROOT_PATH = DATA_ROOT / "media"
+DB_PATH = RUNTIME_PATHS.db_path
+STATIC_ROOT_PATH = RUNTIME_PATHS.static_root
+MEDIA_ROOT_PATH = RUNTIME_PATHS.media_root
 DEPLOY_CONFIG_PATH = CONFIG_ROOT / "deploy.toml"
-
-for path in [CONFIG_ROOT, DATA_ROOT, DB_PATH.parent, STATIC_ROOT_PATH, MEDIA_ROOT_PATH]:
-    path.mkdir(parents=True, exist_ok=True)
-
-
-def load_toml(path: Path) -> dict:
-    if not path.exists():
-        return {}
-    with path.open("rb") as handle:
-        return tomllib.load(handle)
-
 
 def get_setting(name: str, default: str = "") -> str:
     if name in os.environ:
@@ -71,7 +61,7 @@ if not SECRET_KEY:
 
 SECRET_KEY_FALLBACKS = get_csv_setting("DJANGO_SECRET_KEY_FALLBACKS")
 
-deploy_config = load_toml(DEPLOY_CONFIG_PATH)
+deploy_config = load_toml_file(DEPLOY_CONFIG_PATH)
 
 public_base_url = deploy_config.get("public_base_url", "").strip()
 additional_allowed_hosts = deploy_config.get("additional_allowed_hosts", [])
@@ -130,6 +120,20 @@ PANEL_LOGIN_LOCKOUT_SECONDS = max(
     60,
     int(deploy_config.get("panel_login_lockout_seconds", 900)),
 )
+PANEL_LOGIN_THROTTLE_RETENTION_SECONDS = max(
+    PANEL_LOGIN_FAILURE_WINDOW_SECONDS + PANEL_LOGIN_LOCKOUT_SECONDS,
+    int(
+        deploy_config.get(
+            "panel_login_throttle_retention_seconds",
+            7 * 24 * 60 * 60,
+        )
+    ),
+)
+
+MYLONITE_STRICT_CONTENT_VALIDATION = get_setting(
+    "MYLONITE_STRICT_CONTENT_VALIDATION",
+    "true",
+).lower() in {"1", "true", "yes", "on"}
 
 INSTALLED_APPS = [
     "whitenoise.runserver_nostatic",

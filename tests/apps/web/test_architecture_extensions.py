@@ -122,7 +122,7 @@ class ArchitectureExtensionTests(SimpleTestCase):
     def test_loader_validation_status_exposes_site_config_errors(self):
         class StubRepository:
             def load_site_record(self):
-                return {"site_title": "Site"}, []
+                return {"site_title": "Site", "theme": "invalid"}, []
 
             def load_entity_record(
                 self, object_id: str, *, text_filename: str | None = None
@@ -140,5 +140,5 @@ class ArchitectureExtensionTests(SimpleTestCase):
 
         self.assertTrue(validation_status.has_errors)
         self.assertTrue(
-            any("site_url: required" in error for error in validation_status.errors)
+            any("theme: invalid type" in error for error in validation_status.errors)
         )

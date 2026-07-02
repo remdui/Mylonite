@@ -28,6 +28,7 @@ class ViewModelTests(SimpleTestCase):
             display_name="Owner Name",
             headline="Engineer",
             bio="Bio",
+            intro_markdown="Intro",
             summary="Summary",
         )
         page = HomePageViewModel(page_title="Home", hero=hero)

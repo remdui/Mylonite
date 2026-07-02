@@ -1,3 +1,10 @@
+"""Forward-looking artifact service boundaries.
+
+These interfaces are intentionally lightweight: they define the contract for
+future CV/document generation without coupling the rest of the application to a
+specific backend before that feature is implemented.
+"""
+
 from dataclasses import dataclass
 from typing import Protocol
 

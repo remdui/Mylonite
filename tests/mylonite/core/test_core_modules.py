@@ -11,11 +11,7 @@ from mylonite.core.content_schema import (
     schema_defaults,
     validate_record,
 )
-from mylonite.core.content_types import (
-    ArtifactVisibility,
-    ThemeSettings,
-    ValidationStatus,
-)
+from mylonite.core.content_types import ArtifactVisibility, ThemeSettings, ValidationStatus
 from mylonite.core.theme_loader import ThemeResolver
 
 
@@ -37,11 +33,14 @@ class CoreModulesTests(TestCase):
         )
 
     def test_validation_status_to_dict(self):
-        status = ValidationStatus(has_errors=True, errors=["site: site_url: required"])
+        status = ValidationStatus(
+            has_errors=True,
+            errors=["site: theme: invalid type"],
+        )
 
         self.assertEqual(
             status.to_dict(),
-            {"has_errors": True, "errors": ["site: site_url: required"]},
+            {"has_errors": True, "errors": ["site: theme: invalid type"]},
         )
 
     def test_schema_defaults_exposes_site_defaults(self):
@@ -62,14 +61,15 @@ class CoreModulesTests(TestCase):
 
         self.assertEqual(defaults_b["theme"]["name"], "default")
 
-    def test_validate_record_reports_missing_required_field(self):
+    def test_validate_record_applies_defaults_for_missing_required_field(self):
         normalized, errors = validate_record(
             PERSON_PROFILE_SCHEMA,
             {"id": "identity.person.owner"},
         )
 
         self.assertEqual(normalized["id"], "identity.person.owner")
-        self.assertIn("full_name: required", errors)
+        self.assertEqual(normalized["full_name"], "Your Full Name")
+        self.assertEqual(errors, [])
 
     def test_theme_resolver_prefers_existing_requested_theme(self):
         with TemporaryDirectory() as tmp:

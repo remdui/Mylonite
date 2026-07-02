@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Protocol
 
+from django.conf import settings
+
 from .content_loader import PortfolioContentLoader
 from mylonite.core.content_types import HomePageContent, PersonProfile, SiteConfig
 from .view_models import HomeHeroViewModel, HomePageViewModel, LayoutViewModel
@@ -29,7 +31,8 @@ class HomePageContextBuilder:
         hero = HomeHeroViewModel(
             display_name=shared.owner.display_name or shared.owner.full_name,
             headline=shared.owner.headline,
-            bio=shared.homepage.markdown,
+            bio=shared.owner.bio,
+            intro_markdown=shared.homepage.markdown,
             summary=shared.owner.summary,
         )
         page_model = HomePageViewModel(page_title="Home", hero=hero)
@@ -47,7 +50,9 @@ class WebPageContextFactory:
         loader: PortfolioContentLoader | None = None,
         builders: dict[str, PageContextBuilder] | None = None,
     ):
-        self.loader = loader or PortfolioContentLoader()
+        self.loader = loader or PortfolioContentLoader(
+            strict_validation=settings.MYLONITE_STRICT_CONTENT_VALIDATION
+        )
         self.builders = builders or {
             HomePageContextBuilder.page_name: HomePageContextBuilder(),
         }

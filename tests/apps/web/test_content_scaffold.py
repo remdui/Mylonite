@@ -4,13 +4,14 @@ from unittest import TestCase
 
 from apps.web.content_entities import FieldBodySourceSpec, NoBodySourceSpec
 from apps.web.content_registry import ContentEntityRegistry, EntityDefinition
-from apps.web.content_scaffold import _render_toml, sync_content_examples
+from apps.web.content_scaffold import sync_content_examples
 from mylonite.core.content_schema import FieldRule, SchemaDefinition
+from mylonite.core.toml_utils import render_toml
 
 
 class ContentScaffoldTests(TestCase):
     def test_render_toml_supports_nested_tables(self):
-        rendered = _render_toml(
+        rendered = render_toml(
             {
                 "site_title": "Example",
                 "theme": {

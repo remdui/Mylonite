@@ -1,6 +1,6 @@
 import logging
 from datetime import date
-from typing import Callable, Protocol, TypeVar
+from typing import Protocol
 
 from .content_mappers import map_site_config
 from .content_registry import ContentEntityRegistry
@@ -25,8 +25,11 @@ from mylonite.core.content_types import (
     ValidationStatus,
 )
 
-EntityModel = TypeVar("EntityModel")
 logger = logging.getLogger(__name__)
+
+
+class ContentValidationError(ValueError):
+    """Raised when strict content-validation mode encounters schema errors."""
 
 
 class ContentRepository(Protocol):
@@ -67,9 +70,12 @@ class PortfolioContentLoader:
         self,
         repository: ContentRepository | None = None,
         entity_registry: ContentEntityRegistry | None = None,
+        *,
+        strict_validation: bool = False,
     ):
         self.repository = repository or FileSystemContentRepository()
         self.entity_registry = entity_registry or ContentEntityRegistry()
+        self.strict_validation = strict_validation
         self._sources: list[SourceInfo] = []
         self._validation_errors: list[str] = []
 
@@ -104,7 +110,10 @@ class PortfolioContentLoader:
 
     def _validate(self, scope: str, payload: dict, schema: SchemaDefinition) -> dict:
         normalized, errors = validate_record(schema, payload)
-        self._validation_errors.extend([f"{scope}: {error}" for error in errors])
+        scoped_errors = [f"{scope}: {error}" for error in errors]
+        self._validation_errors.extend(scoped_errors)
+        if self.strict_validation and scoped_errors:
+            raise ContentValidationError("; ".join(scoped_errors))
         return {**payload, **normalized}
 
     def load_site(self) -> SiteConfig:
@@ -112,29 +121,6 @@ class PortfolioContentLoader:
         self._track_sources(site_sources)
         validated_site_data = self._validate("site", site_data, SITE_CONFIG_SCHEMA)
         return map_site_config(validated_site_data)
-
-    def load_entity(
-        self,
-        object_id: str,
-        mapper: Callable[[str, dict, str], EntityModel],
-        *,
-        text_filename: str | None = None,
-        schema: SchemaDefinition | None = None,
-    ) -> EntityModel:
-        entry, body, sources = self.repository.load_entity_record(
-            object_id,
-            text_filename=text_filename,
-        )
-        self._track_sources(sources)
-
-        payload = dict(entry)
-
-        validated_entry = (
-            self._validate(object_id, payload, schema)
-            if schema is not None
-            else payload
-        )
-        return mapper(object_id, validated_entry, body)
 
     def load_registered_entity(self, entity_type: str, object_id: str):
         """Load an entity via registry metadata and body-source strategy."""

@@ -110,6 +110,7 @@ def build_throttle_keys(request, username: str) -> list[str]:
 
 
 def get_login_lockout(request, username: str) -> LockoutState:
+    prune_stale_login_throttles()
     now = timezone.now()
     locked_until = None
 
@@ -126,6 +127,7 @@ def get_login_lockout(request, username: str) -> LockoutState:
 
 
 def register_failed_login_attempt(request, username: str) -> None:
+    prune_stale_login_throttles()
     now = timezone.now()
     window = timedelta(seconds=settings.PANEL_LOGIN_FAILURE_WINDOW_SECONDS)
     lockout = timedelta(seconds=settings.PANEL_LOGIN_LOCKOUT_SECONDS)
@@ -158,3 +160,11 @@ def clear_login_throttle(request, username: str) -> None:
     LoginThrottle.objects.filter(
         key__in=build_throttle_keys(request, username)
     ).delete()
+
+
+def prune_stale_login_throttles(*, now: datetime | None = None) -> int:
+    cutoff = (now or timezone.now()) - timedelta(
+        seconds=settings.PANEL_LOGIN_THROTTLE_RETENTION_SECONDS
+    )
+    deleted, _ = LoginThrottle.objects.filter(last_failure_at__lt=cutoff).delete()
+    return deleted
